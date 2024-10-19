@@ -1,0 +1,33 @@
+\section{AC 自动机}
+
+\begin{minted}{c++}
+// == Preparations ==
+#include <queue>
+// == Main ==
+struct ACAM {
+    int tot, fail[200005], delta[200005][26];
+
+    void insert(string s, int id) {
+        int now = 0;
+        for (char c : s) {
+            int v = c - 'a';
+            if (!delta[now][v]) delta[now][v] = ++tot;
+            now = delta[now][v];
+        }
+        return;
+    }
+    void build() {
+        queue<int> q;
+        for (int c = 0; c < 26; c++)
+            if (delta[0][c]) q.push(delta[0][c]);
+        while (!q.empty()) {
+            int now = q.front();
+            q.pop();
+            for (int c = 0; c < 26; c++)
+                if (delta[now][c]) fail[delta[now][c]] = delta[fail[now]][c], q.push(delta[now][c]);
+                else delta[now][c] = delta[fail[now]][c];
+        }
+        return;
+    }
+} ac;
+\end{minted}

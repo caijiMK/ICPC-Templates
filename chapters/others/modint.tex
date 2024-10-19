@@ -1,0 +1,51 @@
+\section{取模类}
+
+\begin{minted}{c++}
+// == Main ==
+struct mint {
+    static const int mod = 998244353;
+    int v;
+
+    mint() = default;
+    mint(int _v): v((_v % mod + mod) % mod) {}
+    explicit operator int() const {return v;}
+    mint operator+(const mint &x) const {return v + x.v - (v + x.v < mod ? 0 : mod);}
+    mint &operator+=(const mint &x) {return *this = *this + x;}
+    mint operator-(const mint &x) const {return v - x.v + (v - x.v >= 0 ? 0 : mod);}
+    mint &operator-=(const mint &x) {return *this = *this - x;}
+    mint operator*(const mint &x) const {return (long long)v * x.v % mod;}
+    mint &operator*=(const mint &x) {return *this = *this * x;}
+    mint inv() const {
+        mint a(*this), ans(1);
+        int b(mod - 2);
+        while (b) {
+            if (b & 1) ans *= a;
+            a *= a;
+            b >>= 1;
+        }
+        return ans;
+    }
+    mint operator/(const mint &x) const {return *this * x.inv();}
+    mint &operator/=(const mint &x) {return *this = *this / x;}
+    mint operator-() {return mint(-v);}
+};
+\end{minted}
+
+\subsection{Barrett 约减}
+
+当模数不固定时可以加速。
+
+用法：在构造函数中传模数，使用方法为 \lstinline|F.reduce(x)|，其中 $x$ 是需要取模的数。
+
+\begin{minted}{c++}
+// == Main ==
+struct Barrett {
+    unsigned long long b, m;
+    Barrett(unsigned long long b = 2): b(b), m((__uint128_t(1) << 64) / b) {}
+    unsigned long long reduce(long long x) {
+        unsigned long long r = (__uint128_t(x + b) * m) >> 64;
+        unsigned long long q = (x + b) - b * r;
+        return q >= b ? q - b : q;
+    }
+} F;
+\end{minted}

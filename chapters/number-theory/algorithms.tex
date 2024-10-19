@@ -1,0 +1,105 @@
+\section{常用数论算法}
+
+\subsection{exgcd}
+
+求出来的解满足 $|x| \le b, |y| \le a$。
+
+\begin{minted}{c++}
+// == Main ==
+int exgcd(int a, int b, int &x, int &y) {
+    if (b == 0) {x = 1; y = 0; return a;}
+    int m = exgcd(b, a % b, y, x);
+    y -= a / b * x;
+    return m;
+}
+\end{minted}
+
+\subsection{CRT}
+
+\textbf{没用。}
+
+\begin{minted}{c++}
+// == Preparations ==
+#include <vector>
+// == Main ==
+int CRT(vector<pair<int, int>> &a) {
+    int M = 1;
+    for (auto i : a) M *= i.second;
+    int res = 0;
+    for (auto i : a) {
+        int t = inv(M / i.second, i.second);
+        res = (res + (long long)i.first * (M / i.second) % M * t % M) % M;
+    }
+    return res;
+}
+\end{minted}
+
+\subsection{exCRT}
+
+需保证 $\mathrm{lcm}$ 在 \lstinline|long long| 范围内。
+
+\begin{minted}{c++}
+// == Preparations ==
+long long exgcd(long long a, long long b, long long &x, long long &y);
+// == Main ==
+long long exCRT(vector<pair<long long, long long>> vec) {
+    long long ans = vec[0].first, mod = vec[0].second;
+    for (int i = 1; i < (int)vec.size(); i++) {
+        long long a = mod, b = vec[i].second, c = vec[i].first - ans % b;
+        long long x, y;
+        long long g = exgcd(a, b, x, y);
+        if (c % g != 0) return -1;
+        b /= g;
+        x = (__int128)x * (c / g) % b;
+        ans += x * mod;
+        mod *= b;
+        ans = (ans % mod + mod) % mod;
+    }
+    return ans;
+}
+\end{minted}
+
+\subsection{exLucas}
+
+\begin{minted}{c++}
+// == Preparations ==
+int power(int a, long long b, int mod);
+int exgcd(int a, int b, int &x, int &y);
+int CRT(vector<pair<int, int>> &a);
+// == Main ==
+int inv(int n, int p) {
+    int x, y;
+    exgcd(n, p, x, y);
+    return (x % p + p) % p;
+}
+int fac(long long n, int p, int pk) {
+    if (n == 0) return 1;
+    int res = 1;
+    for (int i = 1; i < pk; i++)
+        if (i % p != 0) res = (long long)res * i % pk;
+    res = power(res, n / pk, pk);
+    for (int i = 1; i <= n % pk; i++)
+        if (i % p != 0) res = (long long)res * i % pk;
+    return (long long)res * fac(n / p, p, pk) % pk;
+}
+int C(long long n, long long m, int p, int pk) {
+    long long x = n, y = m, z = n - m;
+    int res = (long long)fac(x, p, pk) * inv(fac(y, p, pk), pk) % pk * inv(fac(z, p, pk), pk) % pk;
+    long long e = 0;
+    while (x) e += x / p, x /= p;
+    while (y) e -= y / p, y /= p;
+    while (z) e -= z / p, z /= p;
+    return (long long)res * power(p, e, pk) % pk;
+}
+int exLucas(long long n, long long m, int p) {
+    vector<pair<int, int>> a;
+    for (int i = 2; i * i <= p; i++)
+        if (p % i == 0) {
+            int pk = 1;
+            while (p % i == 0) pk *= i, p /= i;
+            a.emplace_back(C(n, m, i, pk), pk);
+        }
+    if (p != 1) a.emplace_back(C(n, m, p, p), p);
+    return CRT(a);
+}
+\end{minted}

@@ -1,0 +1,9 @@
+_minted-template/*
+template.aux
+template.fdb_latexmk
+template.fls
+template.log
+template.out
+template.synctex(busy)
+template.toc
+template.xdv

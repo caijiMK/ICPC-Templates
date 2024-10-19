@@ -1,0 +1,82 @@
+\section{Miller Rabin 和 Pollard Rho}
+
+\subsection{Miller Rabin}
+
+\begin{minted}{c++}
+// == Preparations ==
+const int prime[] = {2, 3, 5, 7, 9, 11, 13, 17, 19, 23, 29, 31, 37};
+
+long long power(long long a, long long b, long long mod) {
+    long long ans = 1;
+    while (b) {
+        if (b & 1) ans = (__int128)ans * a % mod;
+        a = (__int128)a * a % mod;
+        b >>= 1;
+    }
+    return ans % mod;
+}
+// == Main ==
+inline int Miller_Rabin(long long n) {
+    if (n == 1) return 0;
+    if (n == 2) return 1;
+    if (n % 2 == 0) return 0;
+    long long u = n - 1, t = 0;
+    while (u % 2 == 0) u /= 2, t++;
+    for (int i = 0; i < 12; i++) {
+        if (prime[i] % n == 0) continue;
+        long long x = power(prime[i] % n, u, n);
+        if (x == 1) continue;
+        int flag = 0;
+        for (int j = 1; j <= t; j++) {
+            if (x == n - 1) {flag = 1; break;}
+            x = (__int128)x * x % n;
+        }
+        if (!flag) return 0;
+    }
+    return 1;
+}
+\end{minted}
+
+\subsection{Pollard Rho}
+
+\begin{minted}{c++}
+// == Preparations ==
+#include <chrono>
+#include <random>
+
+mt19937_64 gen(chrono::system_clock::now().time_since_epoch().count());
+/*
+Miller Rabin
+*/
+// == Main ==
+long long Pollard_Rho(long long n) {
+    long long s = 0, t = 0, c = gen() % (n - 1) + 1;
+    for (int goal = 1; ; goal <<= 1, s = t) {
+        long long val = 1;
+        for (int step = 1; step <= goal; step++) {
+            t = ((__int128)t * t + c) % n;
+            val = (__int128)val * abs(t - s) % n;
+            if (!val) return n;
+            if (step % 127 == 0) {
+                long long d = __gcd(val, n);
+                if (d > 1) return d;
+            }
+        }
+        long long d = __gcd(val, n);
+        if (d > 1) return d;
+    }
+}
+void factor(long long n) {
+    if (n < ans) return ;
+    if (n == 1 || Miller_Rabin(n)) {
+        // n = 1 或 n 是一个质因子。
+        // ...
+    }
+    long long p;
+    do p = Pollard_Rho(n);
+    while (p == n);
+    while (n % p == 0) n /= p;
+    factor(n), factor(p);
+    return ;
+}
+\end{minted}

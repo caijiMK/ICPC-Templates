@@ -1,0 +1,30 @@
+\section{后缀排序}
+
+\begin{minted}{c++}
+// == Preparations ==
+int sa[2000005], rk[2000005], b[1000005], cp[2000005];
+// == Main ==
+for (int i = 1; i <= n; i++) b[rk[i] = s[i]]++;
+for (int i = 1; i < 128; i++) b[i] += b[i - 1];
+for (int i = n; i >= 1; i--) sa[b[rk[i]]--] = i;
+memcpy(cp, rk, sizeof(cp));
+for (int i = 1, j = 0; i <= n; i++)
+    if (cp[sa[i]] == cp[sa[i - 1]]) rk[sa[i]] = j;
+    else rk[sa[i]] = ++j;
+for (int w = 1; w < n; w <<= 1) {
+    memcpy(cp, sa, sizeof(cp));
+    memset(b, 0, sizeof(b));
+    for (int i = 1; i <= n; i++) b[rk[cp[i] + w]]++;
+    for (int i = 1; i <= n; i++) b[i] += b[i - 1];
+    for (int i = n; i >= 1; i--) sa[b[rk[cp[i] + w]]--] = cp[i];
+    memcpy(cp, sa, sizeof(cp));
+    memset(b, 0, sizeof(b));
+    for (int i = 1; i <= n; i++) b[rk[cp[i]]]++;
+    for (int i = 1; i <= n; i++) b[i] += b[i - 1];
+    for (int i = n; i >= 1; i--) sa[b[rk[cp[i]]]--] = cp[i];
+    memcpy(cp, rk, sizeof(cp));
+    for (int i = 1, j = 0; i <= n; i++)
+        if (cp[sa[i]] == cp[sa[i - 1]] && cp[sa[i] + w] == cp[sa[i - 1] + w]) rk[sa[i]] = j;
+        else rk[sa[i]] = ++j;
+}
+\end{minted}

@@ -1,0 +1,72 @@
+\section{VS Code 配置}
+
+\subsection{User Tasks}
+
+\begin{minted}{json}
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "My C++ Runner",
+            "detail": "Build and Run Current C++ Program",
+            "command": [ // 三个编译方式保留一个即可。
+                "clear",
+                "&&",
+                "g++ ${file} -o ${fileDirname}/${fileBasenameNoExtension} -std=c++14 -Wall -Wextra && echo '== Normal =='",
+                "g++ ${file} -o ${fileDirname}/${fileBasenameNoExtension} -std=c++14 -Wall -Wextra -O2 && echo '== O2 =='",
+                "g++ ${file} -o ${fileDirname}/${fileBasenameNoExtension} -std=c++14 -Wall -Wextra -fsanitize=undefined,address && echo '== UB Check =='",
+                "&&",
+                "gnome-terminal -- bash -c \"ulimit -s 524288; time ${fileDirname}/${fileBasenameNoExtension}; read -p 'Press ENTER to continue...'; exit\""
+            ],
+            "problemMatcher": [ // 非必要
+                "$gcc"
+            ],
+            "group": { // 非必要
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": { // 非必要
+                "showReuseMessage": false
+            }
+        }
+    ]
+}
+\end{minted}
+
+\subsection{设置}
+
+\begin{itemize}
+    \item 字体大小：16。（\lstinline|"editor.fontSize": 16|）
+    \item 添加多个光标的方式：ctrl。（\lstinline|"editor.multiCursorModifier": "ctrlCmd"|）
+    \item 不适用空格代替 Tab。（\lstinline|"editor.insertSpaces": false|）
+    \item 不允许 Enter 进行代码补全。（\lstinline|"editor.acceptSuggestionOnEnter": "off"|）
+    \item 标尺：110。（\lstinline|"editor.rulers": [110]|）
+    \item 平滑。（\lstinline|"editor.cursorSmoothCaretAnimation": "on"|）
+    \item 标题栏外观。（\lstinline|"window.titleBarStyle": "custom"|）
+\end{itemize}
+
+totally：
+
+\begin{minted}{json}
+{
+    "editor.fontSize": 16,
+    "editor.multiCursorModifier": "ctrlCmd",
+    "editor.insertSpaces": false,
+    "editor.acceptSuggestionOnEnter": "off",
+    "editor.rulers": [110],
+    "editor.cursorSmoothCaretAnimation": "on",
+    "window.commandCenter": false
+}
+\end{minted}
+
+\subsection{快捷键}
+
+\begin{itemize}
+    \item 切换块注释：Ctrl+Shift+A -> Ctrl+Shift+/
+    \item 运行任务：Ctrl+Shift+B -> F11
+    \item 向上移动行：Alt+up -> Ctrl+Shift+up
+    \item 向下移动行：Alt+down -> Ctrl+Shift+down
+\end{itemize}

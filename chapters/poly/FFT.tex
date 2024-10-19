@@ -1,0 +1,42 @@
+\section{FFT}
+
+\begin{minted}{c++}
+// == Preparations ==
+struct complex {
+    double a, b;
+
+    complex() = default;
+    complex(double _a, double _b): a(_a), b(_b) {}
+    complex operator+(const complex &x) const {return complex(a + x.a, b + x.b);}
+    complex operator-(const complex &x) const {return complex(a - x.a, b - x.b);}
+    complex operator*(const complex &x) const {return complex(a * x.a - b * x.b, a * x.b + b * x.a);}
+    complex operator/(const complex &x) const {
+        double t = b * b + x.b * x.b;
+        return complex((a * x.a + b * x.b) / t, (b * x.a - a * x.b) / t);
+    }
+    complex &operator+=(const complex &x) {return *this = *this + x;}
+    complex &operator-=(const complex &x) {return *this = *this - x;}
+    complex &operator*=(const complex &x) {return *this = *this * x;}
+    complex &operator/=(const complex &x) {return *this = *this / x;}
+};
+// == Main ==
+void FFT(vector<complex> &f, int flag) const {
+    int n = f.size();
+    vector<int> swp(n);
+    for (int i = 0; i < n; i++) {
+        swp[i] = swp[i >> 1] >> 1 | ((i & 1) * (n >> 1));
+        if (i < swp[i]) std::swap(f[i], f[swp[i]]);
+    }
+    for (int mid = 1; mid < n; mid <<= 1) {
+        complex w1(cos(pi / mid), flag * sin(pi / mid));
+        for (int i = 0; i < n; i += mid << 1) {
+            complex w(1, 0);
+            for (int j = 0; j < mid; j++, w *= w1) {
+                complex x = f[i + j], y = w * f[i + mid + j];
+                f[i + j] = x + y, f[i + mid + j] = x - y;
+            }
+        }
+    }
+    return;
+}
+\end{minted}

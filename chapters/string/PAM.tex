@@ -1,0 +1,27 @@
+\section{回文自动机 PAM}
+
+\begin{minted}{c++}
+// == Main ==
+struct PAM {
+    int tot, delta[500005][26], len[500005], fail[500005], ans[500005];
+    string s;
+    int lst;
+
+    PAM() {tot = 1; len[0] = 0; len[1] = -1; fail[0] = fail[1] = 1;}
+    int getfail(int now, int i) {
+        while (s[i - len[now] - 1] != s[i]) now = fail[now];
+        return now;
+    }
+    void insert(int i) {
+        int now = getfail(lst, i);
+        if (!delta[now][s[i] - 'a']) {
+            len[++tot] = len[now] + 2;
+            fail[tot] = delta[getfail(fail[now], i)][s[i] - 'a'];
+            delta[now][s[i] - 'a'] = tot;
+            ans[tot] = ans[fail[tot]] + 1;
+        }
+        lst = delta[now][s[i] - 'a'];
+        return;
+    }
+} p;
+\end{minted}

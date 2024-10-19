@@ -1,0 +1,81 @@
+\section{Border 理论}
+
+\subsection{关键结论}
+
+\begin{tcolorbox}
+\textbf{定理 1}：对于一个字符串 $s$，若用 $t$ 表示其最长的 Border，则有 $\mathcal{B}(s) = \mathcal{B}(t) \cup \{t\}$。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{定理 2}：一个字符串的 Border 与 Period 一一对应。具体地，$\mathrm{pre}(s, i) \in \mathcal{B}(s) \iff |s| - i \in \mathcal{P}(s)$。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{弱周期引理}：
+
+$$
+\forall p, q\in\mathcal{P}(s), p + q \le |s| \implies \gcd(p, q)\in\mathcal{P}(s)
+$$
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{定理 3}：若字符串 $t$ 是字符串 $s$ 的前缀，且 $a \in \mathcal{P}(s), b \in \mathcal{P}(t), b \mid a, |t| \ge a$，且 $b$ 是 $t$ 的整周期，则有 $b \in \mathcal{P}(s)$。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{周期引理}：
+
+$$
+\forall p, q\in\mathcal{P}(s), p + q - \gcd(p, q) \le |s| \implies \gcd(p, q)\in\mathcal{P}(s)
+$$
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{定理 4}：对于文本串 $s$ 和模式串 $t$，若 $|t| \ge \frac{|s|}{2}$，且 $t$ 在 $s$ 中至少成功匹配了 $3$ 次，则每次匹配的位置形成一个等差数列，且公差为 $t$ 的最小周期。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{定理 5}：一个字符串 $s$ 的所有长度不小于 $\frac{|s|}{2}$ 的 Border 的长度构成一个等差数列。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{定理 6}：一个字符串的所有 Border 的长度排序后可以划分成 $\lceil\log_2|s|\rceil$ 个连续段，使得每段都是一个等差数列。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{定理 7}：回文串的回文前/后缀即为该串的 Border。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{定理 8}：若回文串 $s$ 有周期 $p$，则可以把 $\mathrm{pre}(s, p)$ 划分成长度为 $|s| \bmod p$ 的前缀和长度为 $p - |s| \bmod p$ 的后缀，使得它们都是回文串。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{定理 9}：若 $t$ 是回文串 $s$ 的最长 Border 且 $|t| \ge \frac{|s|}{2}$，则 $t$ 在 $s$ 中只能匹配 $2$ 次。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{定理 10}：对于任意一个字符串以及 $u, v\in\mathrm{Ssuf}(s), |u| < |v|$，一定有 $u$ 是 $v$ 的 Border。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{定理 11}：对于任意一个字符串 $s$ 以及 $u, v\in\mathrm{Ssuf}(s), |u| < |v|$，一定有 $2|u| \le |v|$。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{定理 12}：$|\mathrm{Ssuf}(s)| \le \log_2|s|$。
+\end{tcolorbox}
+
+\subsection{KMP}
+
+\begin{minted}{c++}
+// n is |s|, m is |t|.
+for (int i = 1, j = 0; i <= n; i++) {
+    while (j && t[j + 1] != s[i]) j = pi[j];
+    if (t[j + 1] == s[i])
+        if (++j == m) {
+            // ...
+            j = nxt[j];
+        }
+}
+\end{minted}

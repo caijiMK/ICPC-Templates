@@ -1,0 +1,15 @@
+\section{牛顿迭代}
+
+用于解决下列问题：
+
+\begin{tcolorbox}
+已知函数 $G$ 且 $G(F(x)) = 0$，求多项式 $F$（${}\bmod x^n$）。
+\end{tcolorbox}
+
+\textbf{结论}：
+
+$$
+F(x) = F_*(x) - \frac{G(F_*(x))}{G'(F_*(x))} \pmod{x^n}
+$$
+
+其中 $F_*(x)$ 为做到 $x^{n / 2}$ 时的答案。

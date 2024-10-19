@@ -1,0 +1,87 @@
+\section{后缀自动机}
+
+\subsection{普通 SAM}
+
+\begin{minted}{c++}
+// == Main ==
+struct SAM {
+    int tot, lst;
+    int len[2000005], siz[2000005], link[2000005];
+    int delta[2000005][26];
+
+    SAM() {link[0] = -1;}
+    void insert(char ch) {
+        int c = ch - 'a', now = ++tot;
+        len[now] = len[lst] + 1;
+        siz[now] = 1;
+        for (int p = lst; p != -1; p = link[p])
+            if (!delta[p][c]) delta[p][c] = tot;
+            else if (len[delta[p][c]] == len[p] + 1) {link[now] = delta[p][c]; break;}
+            else {
+                int q = delta[p][c], v = ++tot;
+                len[v] = len[p] + 1;
+                memcpy(delta[v], delta[q], sizeof(delta[v]));
+                link[v] = link[q], link[q] = v, link[now] = v;
+                for (int i = p; delta[i][c] == q; i = link[i]) delta[i][c] = v;
+                break;
+            }
+        lst = now;
+        return ;
+    }
+} sam;
+\end{minted}
+
+\subsection{广义 SAM}
+
+注意自动机空间要开 Trie 的两倍。
+
+\begin{minted}{c++}
+struct GSAM {
+    int tot;
+    int delta[2000005][26], link[2000005], len[2000005];
+    struct Trie {
+        int tot, trie[1000005][26], st[1000005];
+
+        void insert(string s) {
+            int now = 0;
+            for (char c : s) {
+                int id = c - 'a';
+                if (!trie[now][id]) trie[now][id] = ++tot;
+                now = trie[now][id];
+            }
+            return;
+        }
+    } tr;
+
+    GSAM() {link[0] = -1;}
+    int insert(int c, int lst) {
+        int now = ++tot;
+        len[now] = len[lst] + 1;
+        for (int p = lst; p != -1; p = link[p])
+            if (!delta[p][c]) delta[p][c] = now;
+            else if (len[delta[p][c]] == len[p] + 1) {link[now] = delta[p][c]; break;}
+            else {
+                int q = delta[p][c], v = ++tot;
+                len[v] = len[p] + 1;
+                memcpy(delta[v], delta[q], sizeof(delta[v]));
+                link[v] = link[q], link[q] = v, link[now] = v;
+                for (int i = p; i != -1 && delta[i][c] == q; i = link[i]) delta[i][c] = v;
+                break;
+            }
+        return now;
+    }
+    void build() {
+        queue<int> q;
+        tr.st[0] = 0;
+        q.push(0);
+        while (!q.empty()) {
+            int now = q.front();
+            q.pop();
+            for (int i = 0; i < 26; i++)
+                if (tr.trie[now][i])
+                    tr.st[tr.trie[now][i]] = insert(i, tr.st[now]), q.push(tr.trie[now][i]);
+        }
+        return;
+    }
+} gsam;
+\end{minted}
