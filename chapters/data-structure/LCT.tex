@@ -1,0 +1,63 @@
+\section{Link Cut Tree}
+
+代码维护的是点权异或和。
+
+\begin{minted}{c++}
+// == Main ==
+struct LinkCutTree {
+    int fa[100005], son[100005][2], siz[100005], swp[100005];
+    int val[100005], Xor[100005];
+
+    void pushup(int now) {
+        siz[now] = siz[son[now][0]] + siz[son[now][1]] + 1;
+        Xor[now] = Xor[son[now][0]] ^ val[now] ^ Xor[son[now][1]]; // 此处更新信息。
+        return;
+    }
+    void pushdown(int now) {
+        if(!swp[now]) return ;
+        swap(son[now][0], son[now][1]);
+        swp[son[now][0]] ^= 1, swp[son[now][1]] ^= 1;
+        swp[now] = 0;
+        // 此处将信息 pushdown
+        return;
+    }
+    int isRoot(int now) {return now != son[fa[now]][0] && now != son[fa[now]][1];}
+    int get(int now) {return now == son[fa[now]][1];}
+    void rotate(int x) {
+        int y = fa[x], z = fa[fa[x]], chk = get(x);
+        if (!isRoot(y)) son[z][get(y)] = x;
+        son[y][chk] = son[x][chk ^ 1], fa[son[x][chk ^ 1]] = y;
+        son[x][chk ^ 1] = y, fa[y] = x;
+        fa[x] = z;
+        pushup(y), pushup(x);
+        return;
+    }
+    void splay(int now) {
+        vector<int> stk;
+        stk.push_back(now);
+        for (int i = now; !isRoot(i); i = fa[i]) stk.push_back(fa[i]);
+        while (!stk.empty()) pushdown(stk.back()), stk.pop_back();
+        for (int f; f = fa[now], !isRoot(now); rotate(now))
+            if (!isRoot(f)) rotate(get(f) == get(now) ? f : now);
+        return;
+    }
+    void access(int now) { // 打通到根的链
+        for (int lst = 0; now; lst = now, now = fa[now]) splay(now), son[now][1] = lst, pushup(now);
+        return;
+    }
+    void makeRoot(int now) {access(now); splay(now); swp[now] ^= 1; return;} // 设置根
+    void link(int u, int v) {makeRoot(u); fa[u] = v; return;} // 连接
+    void cut(int u, int v) {makeRoot(u); access(v); splay(v); son[v][0] = fa[u] = 0; return;} // 切割
+    int find(int now) { // 找根
+        access(now), splay(now);
+        pushdown(now);
+        while (son[now][0]) now = son[now][0], pushdown(now);
+        splay(now);
+        return now;
+    }
+    void split(int u, int v) {makeRoot(u); access(v); splay(u); return;} // 剖出 u ~ v 的链
+    void update(int u, int _val) {split(u, u); val[u] = Xor[u] = _val; return ;} // 修改操作，split 后做就行了，此处为单点修改。
+    int query(int u, int v) {split(u, v); return Xor[u];} // 查询操作，split 后做就行了。
+    int isConnected(int u, int v) {return find(u) == find(v);} // 查询两个点是否连通。
+};
+\end{minted}
