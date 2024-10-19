@@ -1,6 +1,7 @@
 \section{最小表示法}
 
 \begin{minted}{c++}
+// == Main ==
 int i = 0, j = 1, k = 0;
 while (k < n && i < n && j < n)
     if (a[(i + k) % n] == a[(j + k) % n]) k++;

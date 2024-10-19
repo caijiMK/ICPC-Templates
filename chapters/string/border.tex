@@ -69,6 +69,7 @@ $$
 \subsection{KMP}
 
 \begin{minted}{c++}
+// == Main ==
 // n is |s|, m is |t|.
 for (int i = 1, j = 0; i <= n; i++) {
     while (j && t[j + 1] != s[i]) j = pi[j];
