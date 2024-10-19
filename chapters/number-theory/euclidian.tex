@@ -1,0 +1,53 @@
+\section{万能欧几里得算法}
+
+\begin{tcolorbox}
+问题描述：\\
+给出一个幺半群 $(S, \cdot)$ 和元素 $u, r \in S$，以及一条直线 $y = \frac{a x + b}{c}$。\\
+画出平面中所有坐标为正整数的横线和竖线，维护一个 $f$，初值为单位元 $e$。\\
+从原点出发，先向 $y$ 轴正方向走直到到达直线与 $y$ 的交点，然后沿直线走一直走到与 $x = n$ 的交点为止。\\
+每当经过一条横线时，执行 $f \gets fu$，经过一条竖线时执行 $f \gets fr$。特别地，在 $y$ 轴上行走时不考虑竖线，同时经过横线和竖线时先执行前者。\\
+求最终的 $f$。记为 $\mathrm{euclid}(a, b, c, n, u, r)$。\\
+其中 $a, b \ge 0, n, c > 0$。
+\end{tcolorbox}
+
+\textbf{做法}：
+
+$$
+\mathrm{euclid}(a, b, c, n, u, r) =
+\begin{cases}
+r ^ n & m = 0 \\
+u ^ {\lfloor\frac{b}{c}\rfloor} \cdot \mathrm{euclid}(a \bmod c, b \bmod c, c, n, u, u ^ {\lfloor\frac{a}{c}\rfloor} r) & a \ge c \lor b \ge c \\
+r ^ {\lfloor\frac{c - b - 1}{a}\rfloor} u \cdot \mathrm{euclid}(c, (c - b - 1) \bmod a, a, m - 1, r, u) \cdot r ^ {n - \lfloor\frac{c m - b - 1}{a}\rfloor} & \text{otherwise}
+\end{cases}
+$$
+
+设一次乘法的复杂度为 $O(T)$，则复杂度为 $O(T \log(a + c) \log(a + n + c))$。
+
+\begin{minted}{c++}
+// == Preparations ==
+struct Node {
+    // ...
+
+    Node operator*(const Node &x) const {
+        // ...
+    }
+};
+// == Main ==
+Node power(Node a, long long b) {
+    Node ans = Node(/*幺元*/);
+    while (b) {
+        if (b & 1) ans = ans * a;
+        a = a * a;
+        b >>= 1;
+    }
+    return ans;
+}
+Node Euclid(int a, int b, int c, long long n, Node r, Node u) {
+    long long m = (a * n + b) / c;
+    if (!m) return power(r, n);
+    if (a >= c || b >= c)
+        return power(u, b / c) * Euclid(a % c, b % c, c, n, power(u, a / c) * r, u);
+    return power(r, (c - b - 1) / a) * u *
+        Euclid(c, (c - b - 1) % a, a, m - 1, u, r) * power(r, n - (c * m - b - 1) / a);
+}
+\end{minted}
