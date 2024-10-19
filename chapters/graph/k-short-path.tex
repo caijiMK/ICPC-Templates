@@ -1,0 +1,106 @@
+\section{k 短路}
+
+复杂度为 $O((n + m)\log n + k\log k)$。
+
+\begin{minted}{c++}
+// == Preparations ==
+int ontree[200005];
+struct graph {
+    int tot, hd[5005];
+    int nxt[200005], to[200005];
+    long long dt[200005];
+
+    void add(int u, int v, long long w) {
+        nxt[++tot] = hd[u];
+        hd[u] = tot;
+        to[tot] = v;
+        dt[tot] = w;
+        return ;
+    }
+} g;
+long long dis[5005];
+struct node {
+    int id;
+    long long val;
+
+    node() = default;
+    node(int _id, long long _val): id(_id), val(_val) {}
+    bool operator<(const node &x) const {return val > x.val;}
+};
+priority_queue<node> q;
+int vis[5005];
+
+// 以下左偏树
+struct HeapNode {
+    long long val;
+    int to, dist;
+    HeapNode *ls, *rs;
+
+    HeapNode() = default;
+    HeapNode(long long _val, int _to): val(_val), to(_to), dist(1), ls(nullptr), rs(nullptr) {}
+};
+struct Heap {
+    HeapNode *root[5005];
+
+    HeapNode *merge(HeapNode *u, HeapNode *v) {
+        if (!u) return v;
+        if (!v) return u;
+        if (u->val > v->val) swap(u, v);
+        HeapNode *p = new HeapNode(*u);
+        p->rs = merge(u->rs, v);
+        if (!p->ls || p->ls->dist < p->rs->dist) swap(p->ls, p->rs);
+        if (p->rs) p->dist = p->rs->dist + 1;
+        else p->dist = 1;
+        return p;
+    }
+} h;
+
+struct Node {
+    HeapNode *id;
+    long long val;
+
+    Node() = default;
+    Node(HeapNode *_id, long long _val): id(_id), val(_val) {}
+    bool operator<(const Node &x) const {return val > x.val;}
+};
+priority_queue<Node> Q;
+// == Main ==
+void dfs(int now) {
+    vis[now] = 1;
+    for (int i = g.hd[now]; i; i = g.nxt[i])
+        if (!vis[g.to[i]] && dis[g.to[i]] == dis[now] + g.dt[i]) ontree[i] = 1, dfs(g.to[i]);
+    return ;
+}
+void dfs2(int now) {
+    for (int i = g.hd[now]; i; i = g.nxt[i])
+        if (ontree[i]) h.root[g.to[i]] = h.merge(h.root[g.to[i]], h.root[now]), dfs2(g.to[i]);
+    return;
+}
+
+memset(dis, 0x3f, sizeof(dis));
+q.emplace(n, dis[n] = 0);
+while (!q.empty()) {
+    int now = q.top().id;
+    long long tmp = q.top().val;
+    q.pop();
+    if (tmp != dis[now]) continue;
+    for (int i = g.hd[now]; i; i = g.nxt[i])
+        if (dis[g.to[i]] > dis[now] + g.dt[i]) q.emplace(g.to[i], dis[g.to[i]] = dis[now] + g.dt[i]);
+}
+dfs(n);
+for (int i = 1; i <= n; i++)
+    for (int j = g.hd[i]; j; j = g.nxt[j])
+        if (!ontree[j] && g.to[j] != n)
+            h.root[g.to[j]] = h.merge(h.root[g.to[j]], new HeapNode(dis[i] + g.dt[j] - dis[g.to[j]], i));
+dfs2(n);
+if (h.root[1]) Q.emplace(h.root[1], dis[1] + h.root[1]->val);
+while (!Q.empty()) { // 每次取出来一条路径
+    HeapNode *now = Q.top().id;
+    long long d = Q.top().val;
+    Q.pop();
+    if (now->ls) Q.emplace(now->ls, d - now->val + now->ls->val);
+    if (now->rs) Q.emplace(now->rs, d - now->val + now->rs->val);
+    HeapNode *tmp = h.root[now->to];
+    if (tmp) Q.emplace(tmp, d + tmp->val);
+}
+\end{minted}
