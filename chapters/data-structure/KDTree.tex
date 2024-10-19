@@ -1,0 +1,80 @@
+\section{K-D Tree}
+
+\begin{minted}{c++}
+// == Main ==
+template<const int Dim = 2>
+struct KDTree {
+    using point = array<int, Dim>;
+    struct node {
+        point p, l, r;
+        int val, siz, sum;
+        node *ls, *rs;
+
+        node() = default;
+        node(point _p, int _val = 0):
+            p(_p), l(_p), r(_p), val(_val), siz(1), sum(_val), ls(nullptr), rs(nullptr) {}
+        void pushup() {
+            l = r = p, siz = 1, sum = val;
+            for (int i = 0; i < Dim; i++) {
+                if (ls) l[i] = min(l[i], ls->l[i]), r[i] = max(r[i], ls->r[i]);
+                if (rs) l[i] = min(l[i], rs->l[i]), r[i] = max(r[i], rs->r[i]);
+            }
+            if (ls) siz += ls->siz, sum += ls->sum;
+            if (rs) siz += rs->siz, sum += rs->sum;
+            return ;
+        }
+    };
+    vector<node *> root;
+    using itor = typename vector<node>::iterator;
+
+    node *build(itor l, itor r, int dim = 0) {
+        if (l == r) return nullptr;
+        int mid = (r - l) / 2;
+        nth_element(l, l + mid, r, [&dim](const node &x, const node &y) {return x.p[dim] < y.p[dim];});
+        node *now = new node(*(l + mid));
+        now->ls = build(l, l + mid, (dim + 1) % Dim);
+        now->rs = build(l + mid + 1, r, (dim + 1) % Dim);
+        now->pushup();
+        return now;
+    }
+    void getnode(node *now, vector<node> &vec) {
+        if (!now) return ;
+        vec.push_back(*now);
+        getnode(now->ls, vec), getnode(now->rs, vec);
+        delete now;
+        return ;
+    }
+    void insert(point p, int val) {
+        vector<node> tmp({node(p, val)});
+        while (!root.empty() && root.back()->siz == (int)tmp.size())
+            getnode(root.back(), tmp), root.pop_back();
+        sort(tmp.begin(), tmp.end(), [](const node &x, const node &y) {return x.p < y.p;});
+        vector<node> vec;
+        for (node i : tmp)
+            if (!vec.empty() && vec.back().p == i.p) vec.back().val += i.val;
+            else vec.push_back(i);
+        root.push_back(build(vec.begin(), vec.end()));
+        return ;
+    }
+    int query(point ll, point rr, node *now) {
+        if (!now) return 0;
+        int flag = 1;
+        for (int i = 0; i < Dim; i++)
+            if (now->r[i] < ll[i] || now->l[i] > rr[i]) return 0;
+            else flag &= ll[i] <= now->l[i] && now->r[i] <= rr[i];
+        if (flag) return now->sum;
+        flag = 1;
+        for (int i = 0; i < Dim; i++) flag &= ll[i] <= now->p[i] && now->p[i] <= rr[i];
+        return flag * now->val + query(ll, rr, now->ls) + query(ll, rr, now->rs);
+    }
+    int query(point ll, point rr) {
+        int ans = 0;
+        for (node *rt : root) ans += query(ll, rr, rt);
+        return ans;
+    }
+    ~KDTree() {
+        vector<node> tmp;
+        for (node *rt : root) getnode(rt, tmp);
+    }
+};
+\end{minted}
