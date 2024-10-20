@@ -1,0 +1,40 @@
+\section{行列式求值}
+
+\begin{minted}{c++}
+// == Preparations ==
+const int N = 605;
+// == Main ==
+void Swap(int i , int j)
+{
+    if(i == j)return ;
+    for(int k = 1 ; k <= n ; k++)
+        swap(a[i][k] , a[j][k]);
+    f = -f;
+}
+int Det(int n , int mod , ll a[N][N])
+{
+    int m = 0;
+    for(int i = 1 ; i <= n ; i++)
+    {
+        m++;
+        for(int j = m ; j <= n ; j++)
+            if(a[j][i]){Swap(m , j); break ;};
+        if(!a[m][i])return 0;
+        for(int j = m + 1 ; j <= n ; j++)
+        {
+            while(a[j][i] && a[m][i])
+            {
+                ll r = a[j][i] / a[m][i] % mod;
+                for(int k = 1 ; k <= n ; k++)
+                    a[j][k] = (a[j][k] - (ll)r * a[m][k]) % mod;
+                Swap(m , j);
+            }
+            if(!a[m][i])Swap(m , j);
+        }
+    }
+    ll ans = 1;
+    for(int i = 1 ; i <= n ; i++)
+        ans *= a[i][i];
+    return (ans * f % mod + mod) % mod;
+}
+\end{minted}
