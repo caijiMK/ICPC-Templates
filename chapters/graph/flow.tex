@@ -1,0 +1,192 @@
+\section{网络流}
+
+\subsection{最大流}
+
+\begin{minted}{c++}
+// == Preparations ==
+#include <queue>
+// == Main ==
+struct Dinic {
+    int s, t;
+    struct graph {
+        int tot, hd[205];
+        int nxt[10005], to[10005], dt[10005];
+        graph() {tot = 1;}
+        void add(int u, int v, int w) {
+            nxt[++tot] = hd[u];
+            hd[u] = tot;
+            to[tot] = v;
+            dt[tot] = w;
+            return ;
+        }
+    } g;
+    int cur[205], dis[205];
+
+    void add_edge(int u, int v, int f) {g.add(u, v, f), g.add(v, u, 0); return;}
+    int bfs() {
+        memset(dis, 0, sizeof(dis));
+        queue<int>q;
+        q.push(s);
+        dis[s] = 1;
+        while (!q.empty()) {
+            int now = q.front();
+            q.pop();
+            cur[now] = g.hd[now];
+            for (int i = g.hd[now]; i; i = g.nxt[i])
+                if (g.dt[i] && !dis[g.to[i]]) dis[g.to[i]] = dis[now] + 1, q.push(g.to[i]);
+        }
+        return dis[t];
+    }
+    long long dinic(int now, long long flow) {
+        if (now == t) return flow;
+        long long used = 0;
+        for (int i = cur[now]; i && used < flow; i = g.nxt[i])
+            if (g.dt[i] && dis[g.to[i]] == dis[now] + 1) {
+                long long k = dinic(g.to[i], min(flow - used, (long long)g.dt[i]));
+                g.dt[i] -= k, g.dt[i ^ 1] += k;
+                used += k;
+                cur[now] = i;
+            }
+        if (used == 0) dis[now] = 0;
+        return used;
+    }
+    long long solve() {
+        long long ans = 0;
+        while (bfs()) ans += dinic(s, 0x3f3f3f3f3f3f3f3f);
+        return ans;
+    }
+} F;
+\end{minted}
+
+\subsection{费用流}
+
+原始对偶：
+
+\begin{minted}{c++}
+// == Preparations ==
+#include <queue>
+// == Main ==
+struct PrimalDual {
+    int n, s, t;
+    struct graph {
+        int tot, hd[805];
+        int nxt[30005], to[30005], flw[30005], cst[30005];
+
+        graph() {tot = 1;}
+        void add(int u, int v, int f, int c) {
+            nxt[++tot] = hd[u];
+            hd[u] = tot;
+            to[tot] = v;
+            flw[tot] = f;
+            cst[tot] = c;
+            return ;
+        }
+    } g;
+    int h[805], dis[805], f[805], pre[805];
+    struct node {
+        int id, val;
+
+        node() = default;
+        node(int _id, int _val): id(_id), val(_val) {}
+        bool operator<(const node &x) const {return val > x.val;}
+    };
+
+    void add_edge(int u, int v, int f, int c) {g.add(u, v, f, c), g.add(v, u, 0, -c); return;}
+    void spfa() {
+        queue<int> q;
+        memset(h, 0x3f, sizeof(h));
+        h[s] = 0;
+        q.push(s);
+        while (!q.empty()) {
+            int now = q.front();
+            q.pop();
+            f[now] = 0;
+            for (int i = g.hd[now]; i; i = g.nxt[i])
+                if (g.flw[i] && h[g.to[i]] > h[now] + g.cst[i]) {
+                    h[g.to[i]] = h[now] + g.cst[i];
+                    if (!f[g.to[i]]) q.push(g.to[i]), f[g.to[i]] = 1;
+                }
+        }
+        return ;
+    }
+    int dijkstra() {
+        priority_queue<node> q;
+        memset(dis, 0x3f, sizeof(dis));
+        memset(pre, 0, sizeof(pre));
+        q.emplace(s, dis[s] = 0);
+        while (!q.empty()) {
+            int now = q.top().id, tmp = q.top().val;
+            q.pop();
+            if (dis[now] != tmp) continue;
+            for (int i = g.hd[now]; i; i = g.nxt[i])
+                if (g.flw[i] && dis[g.to[i]] > dis[now] + g.cst[i] + h[now] - h[g.to[i]]) {
+                    q.emplace(g.to[i], dis[g.to[i]] = dis[now] + g.cst[i] + h[now] - h[g.to[i]]);
+                    pre[g.to[i]] = i ^ 1;
+                }
+        }
+        return pre[t];
+    }
+    pair<int, int> solve() {
+        int flow = 0, cost = 0;
+        spfa();
+        while (dijkstra()) {
+            for (int i = 1; i <= n; i++)
+                if (dis[i] < 0x3f3f3f3f) h[i] += dis[i];
+            int mnflow = 0x3f3f3f3f;
+            for (int i = t; i != s; i = g.to[pre[i]]) mnflow = min(mnflow, g.flw[pre[i] ^ 1]);
+            for (int i = t; i != s; i = g.to[pre[i]]) g.flw[pre[i] ^ 1] -= mnflow, g.flw[pre[i]] += mnflow;
+            flow += mnflow;
+            cost += mnflow * h[t];
+        }
+        return {flow, cost};
+    }
+} F;
+\end{minted}
+
+\subsection{上下界}
+
+\begin{tcolorbox}
+$f(u, v)$ 表示边 $(u, v)$ 的流量，$f(u)$ 表示 $u$ 的出流减入流，$c(u, v)$ 表示边 $(u, v)$ 的容量。
+
+对于每条边给定一个流量下界 $b(u, v)$，需要额外满足 $\forall (u, v), b(u, v) \le f(u, v) \le c(u, v)$。
+\end{tcolorbox}
+
+\subsubsection{无源汇上下界可行流}
+
+没有源点和汇点，对于所有点满足 $f(u) = 0$，求一个可行的流。
+
+先强制每条边流到流量下界，建立虚拟源汇点 $s, t$，对于每个点 $u$ 考虑此时的净流量：
+
+\begin{itemize}
+    \item $f(u) = 0$：满足条件，不用管。
+    \item $f(u) > 0$：出流大于入流，从 $u$ 向 $t$ 连容量为 $f(u)$ 的边。
+    \item $f(u) < 0$：入流大于出流，从 $s$ 向 $u$ 连容量为 $-f(u)$ 的边。
+\end{itemize}
+
+将原图中每条边的容量设为 $c(u, v) - b(u, v)$，则从 $s$ 到 $t$ 的流相当于增加调整流量的过程。
+
+若 $s$ 的出边流满（等同于 $t$ 的入边流满），则找到了一条可行流。
+
+\subsubsection{有源汇上下界可行流}
+
+连一条 $t$ 到 $s$ 容量正无穷下界为 $0$ 的边，然后跑无源汇上下界可行流即可，流量为新增边的流量。
+
+\subsubsection{有源汇上下界最大流}
+
+求出可行流后删掉 $t$ 到 $s$ 的边，在残量网络上跑 $s$ 到 $t$ 的最大流，该最大流加上原本的可行流即为答案。
+
+\subsubsection{有源汇上下界最小流}
+
+同理，改成求 $t$ 到 $s$ 的最大流，原可行流减去该最大流即为答案。
+
+\subsubsection{有源汇上下界最小费用流}
+
+做法是一样的，所有新增边费用为 $0$。
+
+需要注意求最小流时需要改成费用最大。
+
+\subsection{有负圈的最小费用最大流}
+
+先钦定所有负圈边流满，即上下界均为流量。然后对于负边建反向、容量相同、费用为相反数的边用于退流原边。
+
+这样就转化成了有源汇上下界最小费用最大流。

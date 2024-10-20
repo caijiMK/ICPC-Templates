@@ -1,0 +1,74 @@
+\section{二分图匹配}
+
+\subsection{最大匹配}
+
+\begin{minted}{c++}
+// == Preparations ==
+int chos[100005], vis[100005];
+struct graph {/* ... */} g;
+// == Main ==
+int dfs(int now) {
+    for (int i = g.hd[now]; i; i = g.nxt[i]) {
+        if (vis[g.to[i]]) continue;
+        vis[g.to[i]] = true;
+        if (!chos[g.to[i]] || dfs(chos[g.to[i]])) {
+            chos[g.to[i]] = now;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+for (int i = 1; i <= n; i++) {
+    memset(vis, 0, sizeof(vis));
+    ans += dfs(i);
+}
+\end{minted}
+
+\subsection{最大权匹配}
+
+\begin{minted}{c++}
+// == Preparations ==
+int vis[1005], mat[1005], pre[1005];
+long long g[505][1005];
+long long w[1005], slack[1005];
+// edge: g[u][n + v] = w;
+// == Main ==
+for (int i = 1; i <= n; i++) {
+    w[i] = ~0x3f3f3f3f3f3f3f3f;
+    for (int j = n + 1; j <= n + n; j++) w[i] = max(w[i], (long long)g[i][j]);
+}
+for (int i = 1; i <= n; i++) {
+    memset(vis, 0, sizeof(vis));
+    memset(slack, 0x3f, sizeof(slack));
+    memset(pre, 0, sizeof(pre));
+    int now = i, ri = 0;
+    while (1) {
+        int id = 0;
+        long long delta = 0x3f3f3f3f3f3f3f3f;
+        for (int j = n + 1; j <= n + n; j++)
+            if (!vis[j]) {
+                long long val = w[now] + w[j] - g[now][j];
+                if (val < slack[j]) slack[j] = val, pre[j] = ri;
+                if (slack[j] < delta) delta = slack[j], id = j;
+            }
+        w[i] -= delta;
+        for (int j = n + 1; j <= n + n; j++)
+            if (vis[j]) w[j] += delta, w[mat[j]] -= delta;
+            else slack[j] -= delta;
+        vis[ri = id] = 1;
+        if (mat[ri]) now = mat[ri];
+        else break;
+    }
+    while (ri) {
+        mat[ri] = mat[pre[ri]];
+        if (!pre[ri]) {mat[ri] = i; break;}
+        ri = pre[ri];
+    }
+}
+long long ans = 0;
+for (int i = 1; i <= n + n; i++) ans += w[i];
+printf("%lld\n", ans);
+for (int i = n + 1; i <= n + n; i++) printf("%d ", mat[i]);
+puts("");
+\end{minted}
