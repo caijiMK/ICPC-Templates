@@ -1,0 +1,60 @@
+\section{弦图}
+
+\subsection{MCS 最大势算法。}
+
+\begin{minted}{c++}
+// == Preparations ==
+#include <vector>
+
+int pos[/* ... */], p[/* ... */];
+vector<int> vec[/* ... */];
+// == Main ==
+for (int i = 1; i <= n; i++) pos[i] = vec[0].size(), vec[0].push_back(i);
+for (int i = 1, j = 0; i <= n; i++, j++) {
+    while (vec[j].empty()) j--;
+    int u = p[i] = vec[j].back();
+    vec[j].pop_back();
+    pos[u] = -1;
+    for (int k = g.hd[u]; k; k = g.nxt[k])
+        if (pos[g.to[k]] != -1) {
+            int v = g.to[k];
+            pos[vec[l[v]].back()] = pos[v];
+            swap(vec[l[v]][pos[v]], vec[l[v]].back());
+            vec[l[v]].pop_back();
+            pos[v] = vec[++l[v]].size();
+            vec[l[v]].push_back(v);
+        }
+}
+reverse(p + 1, p + n + 1);
+\end{minted}
+
+\subsection{弦图判定}
+
+跑 MCS，然后判断是否为完美消除序列。
+
+具体地，对于每个 $p _ i$，找到与之相连且在它之后出现的点，按出现顺序记为 $c _ 1, c _ 2, \ldots, c _ k$，我们只需要判断 $c _ 1$ 与 $c _ j$ 之间是否有边即可。因为这个团中其他边会在 $p _ {c _ 2}, p _ {c _ 3}, \ldots, p _ {c _ k}$ 中被判断。
+
+\subsection{求弦图的团数与色数}
+
+求团数：\\
+设 $N(x)$ 为完美消除序列中在 $x$ 之后且与 $x$ 相连的点的集合，则弦图的最大团一定可以被表示为 $\{x\} + N(x)$，则 $|\{x\} + N(x)|$ 的最大值就是弦图的团数。
+
+求色数：\\
+考虑按完美消除序列从后往前考虑，贪心染 $\operatorname{mex}$，这样需要的颜色数量等于团数。  
+由于团数小于等于色数，这样取到等号，一定最小。
+
+\subsection{求弦图的最大独立集和最小团覆盖}
+
+最大独立集：\\
+按完美消除序列从前往后贪心。  
+正确性证明：每次考虑最靠前的极大团，选最前面的点不劣于选其他点，且优于不选点。
+
+最小团覆盖：\\
+取最大独立集中的每个点 $x$ 对应的团 $\{x\} + N(x)$，这样需要的团的数量等于最大独立集的大小。  
+由于最大独立集小于等于最小团覆盖，这样取到等号，一定最小。
+
+\subsection{tricks}
+
+区间图是弦图，完美消除序列为按区间右端点从小到大排序。
+
+树上距离不超过 $k$ 的点连边是弦图，完美消除序列为 bfs 序的逆序。

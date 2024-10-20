@@ -1,0 +1,70 @@
+\section{支配树}
+
+$idom_u$ 为 $u$ 在支配树上的父亲。
+
+最后 $id$ 形成 dfs 序。
+
+\begin{minted}{c++}
+// == Preparations ==
+#include <vector>
+
+struct graph {
+    int tot, hd[200005];
+    int nxt[300005], to[300005];
+    
+    void add(int u, int v) {
+        nxt[++tot] = hd[u];
+        hd[u] = tot;
+        to[tot] = v;
+        return ;
+    }
+} g, fg;
+int timer, fa[200005], dfn[200005], id[200005];
+int sdom[200005], idom[200005];
+struct dsu {
+    int fa[200005], mn[200005];
+
+    dsu() {for (int i = 1; i < 200005; i++) fa[i] = mn[i] = i;}
+    int find(int x) {
+        if (x == fa[x]) return x;
+        int tmp = find(fa[x]);
+        if (dfn[sdom[mn[fa[x]]]] < dfn[sdom[mn[x]]]) mn[x] = mn[fa[x]];
+        return fa[x] = tmp;
+    }
+} d;
+vector<int> vec[200005];
+int siz[200005];
+// == Main ==
+void dfs(int now) {
+    id[dfn[now] = ++timer] = now;
+    for (int i = g.hd[now]; i; i = g.nxt[i])
+        if (!dfn[g.to[i]]) fa[g.to[i]] = now, dfs(g.to[i]);
+    return ;
+}
+void solve() {
+    dfs(1);
+    for (int i = 1; i <= n; i++) sdom[i] = i;
+    for (int i = timer; i >= 1; i--) {
+        int u = id[i];
+        for (int v : vec[u]) {
+            d.find(v);
+            if (sdom[d.mn[v]] == u) idom[v] = u;
+            else idom[v] = d.mn[v];
+        }
+        if (i == 1) continue;
+        for (int j = fg.hd[u]; j; j = fg.nxt[j]) {
+            if (!dfn[fg.to[j]]) continue;
+            if (dfn[fg.to[j]] < dfn[sdom[u]]) sdom[u] = fg.to[j];
+            else if (dfn[fg.to[j]] > dfn[u]) {
+                d.find(fg.to[j]);
+                if (dfn[sdom[d.mn[fg.to[j]]]] < dfn[sdom[u]]) sdom[u] = sdom[d.mn[fg.to[j]]];
+            }
+        }
+        vec[sdom[u]].push_back(u);
+        d.fa[u] = fa[u];
+    }
+    for (int i = 2; i <= timer; i++)
+        if (idom[id[i]] != sdom[id[i]]) idom[id[i]] = idom[idom[id[i]]];
+    return ;
+}
+\end{minted}

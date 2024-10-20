@@ -1,0 +1,31 @@
+\section{全局最小割}
+
+时间复杂度为 $O(|V|^3)$。
+
+\begin{minted}{c++}
+// == Preparations ==
+int g[605][605], vis1[605], vis2[605];
+long long w[605];
+// == Main ==
+long long Stoer_Wagner() {
+    long long ans = 0x3f3f3f3f3f3f3f3f;
+    for (int i = 1; i < n; i++) {
+        int s = 0, t = 0;
+        memset(vis2, 0, sizeof(vis2));
+        memset(w, 0, sizeof(w));
+        for (int j = 1; j <= n - i + 1; j++) {
+            int now = 0;
+            for (int k = 1; k <= n; k++)
+                if (!vis1[k] && !vis2[k] && w[k] >= w[now]) now = k;
+            s = t, t = now;
+            vis2[now] = 1;
+            for (int k = 1; k <= n; k++) w[k] += g[k][now];
+        }
+        ans = min(ans, w[t]);
+        vis1[t] = 1;
+        for (int j = 1; j <= n; j++)
+            if (j != s) g[s][j] += g[t][j], g[j][s] += g[j][t];
+    }
+    return ans;
+}
+\end{minted}
