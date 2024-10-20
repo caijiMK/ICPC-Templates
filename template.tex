@@ -68,6 +68,7 @@
 \lfoot{}%					          %页脚右
 \renewcommand{\headrulewidth}{0mm}        %页眉线宽，设为0可以去页眉线
 \renewcommand{\footrulewidth}{0mm}        %页脚线宽，设为0可以去页脚线
+\renewcommand*\contentsname{目录}
 
 \begin{document}
 % 用\setlength设置页眉页脚边距
@@ -99,8 +100,8 @@
 \pagenumbering{gobble}
 \tableofcontents       % 生成目录
 \clearpage
+
 \pagenumbering{arabic}
-% \pagestyle{empty}  % 目录页不显示页码
 
 \newpage
 \setcounter{page}{1}   % 从下面开始编页码
