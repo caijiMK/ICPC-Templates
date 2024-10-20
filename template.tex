@@ -96,8 +96,11 @@
 %\clearpage
 
 % 目录
+\pagenumbering{gobble}
 \tableofcontents       % 生成目录
-\thispagestyle{empty}  % 目录页不显示页码
+\clearpage
+\pagenumbering{arabic}
+% \pagestyle{empty}  % 目录页不显示页码
 
 \newpage
 \setcounter{page}{1}   % 从下面开始编页码
