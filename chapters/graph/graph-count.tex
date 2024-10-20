@@ -1,0 +1,53 @@
+\section{图计数相关}
+
+\subsection{环计数}
+
+任意环计数：状压 DP，设 $dp_{S, i}$ 为从 $S$ 中最小的点出发，走过的点集为 $S$，现在在 $i$ 的方案数，在能走到起点时统计答案，最终答案为减去边数再除 $2$。
+
+三元环计数：将点按度数从小到大排序，然后边从前往后定向，这样每个点出度只有 $O(\sqrt{m})$ 条，枚举一个点 $u$，再枚举 $u$ 指向的点 $v$，再枚举 $v$ 指向的点 $w$，check 是否存在边 $(u, w)$ 即可。复杂度分析：当 $v$ 入度 $\le \sqrt{m}$ 时，$u$ 只有 $O(\sqrt{m})$ 个；当 $v$ 入度 $> \sqrt{m}$ 时，$w$ 至多 $O(\sqrt{m})$ 个。
+
+竞赛图三元环计数：$\binom{n}{3} - \sum_{i = 1}^n \binom{d(i)}{2}$，其中 $d(i)$ 为 $i$ 的入度或出度。
+
+四元环计数：同样的方法排序定向，然后枚举一个点 $a$，对所有 $c$ 记录 $a \to b \to c$ 的数量，然后对于每个 $c$ 任取两个 $b$ 即可组成一个四元环。
+
+团计数：同样的方法排序定向，然后枚举一个点 $u$，对 $u$ 的出边 meet-in-middle。具体来说，对一个集合搜出每个子集是否为团，然后做高维前缀和，枚举另一个集合的子集，维护其是否为团及这个集合中的点与前一个集合中的点的连边的交即可。时间复杂度为 $O(\sqrt{m} \times 2^\frac{\sqrt{2m}}{2})$。（QOJ7514）
+
+\subsection{Prufer 序列}
+
+树到 Prufer 序列的映射：每次选择编号最小的叶子删掉并记录其父亲直到只剩两个点。
+
+\begin{minted}{c++}
+// == Main ==
+// d[i] 为 i 的度数 -1
+for (int i = 1, j = 1; i <= n - 2; i++, j++) {
+    while (d[j]) j++;
+    p[i] = fa[j];
+    while (i <= n - 2 && !--d[p[i]] && p[i] < j) p[i + 1] = fa[p[i]], i++;
+}
+\end{minted}
+
+Prufer 序列到树的映射：先算出度数，每次选择一个编号最小的度数为 $1$ 的点与当前 Prufer 序列的点连接，然后给两个点的度数都 $-1$，最后剩两个度数为 $1$ 的点连起来。
+
+\begin{minted}{c++}
+// == Main ==
+// d[i] 为 i 的度数 -1
+p[n - 1] = n;
+for (int i = 1, j = 1; i < n; i++, j++) {
+    while (d[j]) j++;
+    fa[j] = p[i];
+    while (i < n && !--d[p[i]] && p[i] < j) fa[p[i]] = p[i + 1], i++;
+}
+\end{minted}
+
+给一张 $k$ 个连通块的图，每个连通块的点数为 $s_i$，求连 $k - 1$ 条边使其连通的方案数：
+
+$$
+\begin{aligned}
+& \sum\limits_{d_i \ge 1, \sum_{i = 1}^k (d_i - 1) = k - 2} \binom{k - 2}{d_1 - 1, d_2 - 1, \cdots, d_k - 1} \cdot \prod\limits_{i = 1}^k s_i^{d_i} \\
+=& \prod\limits_{i = 1}^k s_i \sum\limits_{d_i \ge 1, \sum_{i = 1}^k (d_i - 1) = k - 2} \binom{k - 2}{d_1 - 1, d_2 - 1, \cdots, d_k - 1} \cdot \prod\limits_{i = 1}^k s_i^{d_i - 1} \\
+=& (\sum\limits_{i = 1}^k s_i)^{k - 2} \prod\limits_{i = 1}^k s_i \\
+=& n^{k - 2} \prod\limits_{i = 1}^k s_i \\
+\end{aligned}
+$$
+
+第二个等号为多元二项式定理。
