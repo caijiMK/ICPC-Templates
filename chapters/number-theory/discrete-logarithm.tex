@@ -1,0 +1,101 @@
+\section{离散对数}
+
+离散对数问题即在模 $p$ 意义下求解 $\log_{a}{b}$。这等价于求解离散对数方程
+
+$$a^x \equiv b\pmod p$$
+
+\subsection{BSGS}
+
+运用了根号分治的思想：设块长为 $M$ 且 $x=AM-B$，则有 $a^{AM} \equiv ba^{B} \pmod p$。
+
+固定模数 $p$ 和底数 $a$ 时，预处理时间为 $\mathcal{O}(\frac{p}{M})$，单次询问 $\mathcal{O}(M)$
+
+如果数据组数为 $T$，当 $M$ 取 $\left \lceil \sqrt{\frac{p}{T}} \right \rceil$ 时取到最优复杂度。
+
+以下代码输入要求 $a \perp p,2\le b,n < p<2^{31}$，求得的是模意义下 $\log_{a}{b}$ 的最小的非负整数解。
+
+\begin{minted}{c++}
+// == Preparations ==
+int a , p , m , t , sz , phi; 
+__gnu_pbds::gp_hash_table<int , int>mp;
+int Qpow(int x , int p , int mod);
+int Phi(int n);
+int Inv(int a , int p){return Qpow(a , phi - 1 , p);}
+// == Main ==
+void Init()
+{
+    mp.clear();
+    phi = Phi(p); 
+    sz = sqrt(phi / m) + 1;
+    t = ((ll)phi + sz - 1) / sz;
+    int as = Qpow(a , sz , p) , aa = 1;
+    for(int i = 1 ; i <= t ; i++)
+    {
+        aa = (ll)aa * as % p;
+        if(!mp[aa])mp[aa] = i;
+    }
+}
+int BSGS(int b)
+{
+    int r = b , ans = p;
+    for(int k = 0 ; k < sz ; k++)
+    {
+        if(mp.find(r) != mp.end())
+            ans = min((ll)ans , (ll)mp[r] * sz - k);
+        r = (ll)r * a % p;
+    }
+    return ans >= p ? -1 : ans;
+}
+\end{minted}
+
+\subsection{exBSGS}
+
+将方程化为如下形式，其中 $\frac{p}{D} \perp a$。
+
+$$\frac{a^k}{D}\cdot a^{x-k}\equiv\frac{b}{D} \pmod{\frac{p}{D}}$$
+
+然后使用 BSGS 求解，注意特判 $x \le k$ 的情况。
+
+以下代码输入要求 $1\le a,p,b\le10^9$，求得的是模意义下 $\log_{a}{b}$ 的最小的非负整数解。
+
+\begin{minted}{c++}
+// == Preparations ==
+int a , p , mod , m , t , sz , phi , k , d , inv; 
+__gnu_pbds::gp_hash_table<int , int>mp , low;
+int Qpow(int x , int p , int mod);
+int Phi(int n);
+int Inv(int a , int p);
+int BSGS(int b);
+// == Main ==
+void Init()
+{
+    mp.clear() , low.clear();
+    a %= p , mod = p , d = 1 , k = 0; 
+    int ad = 1 , ak = 1; 
+    for(int g = __gcd(a , p) ; g != 1 ; g = __gcd(a , p))
+    {
+        ak = (ll)ak * a % mod , k++;
+        if(!low[ak])low[ak] = k;
+        d *= g , p /= g , ad = ad * ll(a / g) % p;
+    }
+    phi = Phi(p) , inv = Inv(ad , p);
+    sz = sqrt(phi / m) + 1;
+    t = ((ll)phi + sz - 1) / sz;
+    int as = Qpow(a , sz , p) , aa = 1;
+    for(int i = 1 ; i <= t ; i++)
+    {
+        aa = (ll)aa * as % p;
+        if(!mp[aa])mp[aa] = i;
+    }
+}
+int exBSGS(int b)
+{
+    int bm = b % mod;
+    if(mod == 1 || bm == 1)return 0;    
+    if(low.find(bm) != low.end())return low[bm];
+    if(b % d)return -1;
+    b = (ll)(b / d) * inv % p;
+    int ans = BSGS(b);
+    return ans == -1 ? -1 : ans + k;
+}
+\end{minted}
