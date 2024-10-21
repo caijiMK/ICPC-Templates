@@ -55,7 +55,3 @@ make clean           # 清理在 make 过程中产生的无关文件
 ```
 
 `Preparations` 部分为需要的头文件、函数、定义的变量等，`Main` 部分为主要内容。
-
-
-
-test by tx_lcy.
