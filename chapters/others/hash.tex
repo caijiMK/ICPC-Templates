@@ -1,0 +1,17 @@
+\section{自定义哈希}
+
+\begin{minted}{c++}
+unsigned splitmix32(unsigned x) {
+    unsigned z = (x += 0x9E3779B9);
+    z = (z ^ (z >> 16)) * 0x85ebca6b;
+    z = (z ^ (z >> 13)) * 0xc2b2ae35;
+    return z ^ (z >> 16);
+}
+
+unsigned long long splitmix64(unsigned long long x) {
+    unsigned long long z = (x += 0x9e3779b97f4a7c15);
+    z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9;
+    z = (z ^ (z >> 27)) * 0x94d049bb133111eb;
+    return z ^ (z >> 31);
+}
+\end{minted}
