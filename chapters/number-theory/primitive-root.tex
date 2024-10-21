@@ -1,0 +1,72 @@
+\section{原根}
+
+\subsection{阶}
+
+\begin{tcolorbox}
+\textbf{定义}：满足同余式 $a^n \equiv 1 \pmod m$ 的最小正整数 $n$ 存在，这个 $n$ 称作 $a$ 模 $m$ 的阶，记作 $\delta_m(a)$ 或 $\operatorname{ord}_m(a)$。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{性质 1}：$a,a^2,\cdots,a^{\delta_m(a)}$ 模 $m$ 两两不同余。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{性质 2}：若 $a^n \equiv 1 \pmod m$ ，则 $\delta_m(a)\mid n$。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{性质 2 推论}：若 $a^p\equiv a^q\pmod m$ ，则有 $p\equiv q\pmod{\delta_m(a)}$。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{性质 3}：
+
+设 $m\in\mathbf{N}^{*}$ ， $a,b\in\mathbf{Z}$ ， $(a,m)=(b,m)=1$ ，则
+
+$$\delta_m(ab)=\delta_m(a)\delta_m(b)$$
+
+的充分必要条件是
+
+$$\left(\delta_m(a), \delta_m(b)\right)=1$$
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{性质 4}：
+
+设 $k \in \mathbf{N}$ ， $m$ 为正整数， $a\in\mathbf{Z}$ ， $(a,m)=1$ ，则
+$$\delta_m(a^k)=\dfrac{\delta_m(a)}{\left(\delta_m(a),k\right)}$$
+\end{tcolorbox}
+
+\subsection{原根}
+
+
+\begin{tcolorbox}
+\textbf{定义}：
+
+设 $m$ 为正整数， $g$ 为整数。 若 $(g,m)=1$ ，且 $\delta_m(g)=\varphi(m)$ ，则称 $g$ 为模 $m$ 的原根。
+
+即 $g$ 满足
+$\delta_m(g) = \varphi(m)$。 当 $m$ 是质数时，我们有 $g^i \bmod m,0 < i < m$ 的结果互不相同。
+\end{tcolorbox}
+
+
+\begin{tcolorbox}
+\textbf{原根判定定理}：
+
+设 $m \ge 3, (g,m)=1$ ，则 $g$ 是模 $m$ 的原根的充要条件是，对于 $\varphi(m)$ 的每个素因数 $p$ ，都有
+$g^{\frac{\varphi(m)}{p}}\not\equiv 1\pmod m$。
+\end{tcolorbox}
+
+
+\begin{tcolorbox}
+\textbf{原根个数}：
+
+若一个数 $m$ 有原根，则它原根的个数为 $\varphi(\varphi(m))$。
+\end{tcolorbox}
+
+
+\begin{tcolorbox}
+\textbf{原根存在定理}：
+
+一个数 $m$ 存在原根当且仅当 $m=2,4,p^{\alpha},2p^{\alpha}$ ，其中 $p$ 为奇素数， $\alpha\in \mathbf{N}^{*}$。
+\end{tcolorbox}

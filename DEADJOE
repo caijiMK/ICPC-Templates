@@ -1,0 +1,21 @@
+
+*** These modified files were found in JOE when it aborted on Mon Oct 21 20:53:10 2024
+*** JOE was aborted by UNIX signal 1
+
+*** File '/home/pai369/下载/cpp/项目/ICPC-Templates/.git/MERGE_MSG'
+Merge branch 'main' of https://github.com/caijiMK/ICPC-Templates into main
+Tx make some updates.
+# 输入一个提交信息以解释此合并的必要性，尤其是将一个更新后的上游分支
+# 合并到主题分支。
+#
+# 以 '#' 开始的行将被忽略，而空的提交说明将终止提交。
+
+*** File '(Unnamed)'
+/home/pai369/下载/cpp/项目/ICPC-Templates/.git/COMMIT_EDITMSG
+/home/pai369/下载/cpp/项目/ICPC-Templates/.git/MERGE_MSG
+
+*** File '* Startup Log *'
+Processing '/etc/joe/editorrc'...
+Processing '/etc/joe/ftyperc'...
+Finished processing /etc/joe/ftyperc
+Finished processing /etc/joe/editorrc
