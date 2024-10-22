@@ -78,10 +78,9 @@ int m , pr[N] , phi[N] , vis[N] , mod; bitset<N>b;
 void Sieve(int n = N - 5);
 int Qpow(int x , int p , int mod);
 // == Main ==
-vector<int> PrimitiveRoot()
+vector<int> PrimitiveRoot(int p , int d)
 {
-    int p , d; vector<int>pfac , g;
-    cin >> p >> d; mod = p;
+    vector<int>pfac , g; int mod = p;
     if(!vis[p]){return g;} // whether exist primitive root
     for(int i = 1 ; i <= m && pr[i] <= phi[p] ; i++)
         if(phi[p] % pr[i] == 0)pfac.push_back(pr[i]);
