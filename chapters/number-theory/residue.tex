@@ -1,0 +1,118 @@
+\section{剩余}
+
+\begin{tcolorbox}
+\textbf{定义}：
+
+令整数 $k\geq 2$ ，整数 $a$ ， $m$ 满足 $(a,m)=1$ ，若存在整数 $x$ 使得
+\begin{equation}\tag{1}
+x^k\equiv a\pmod m 
+\end{equation}
+
+则称 $a$ 为模 $m$ 的 $k$ 次剩余，否则称 $a$ 为模 $m$ 的 $k$ 次非剩余。
+\end{tcolorbox}
+
+当整数 $k\geq 2$ ，整数 $a$ ， $m$ 满足 $(a,m)=1$ ，模 $m$ 有原根 $g$ 时，令 $d=(k,\varphi(m))$ ，则：
+
+\begin{tcolorbox}
+\textbf{性质 1}：$a$ 为模 $m$ 的 $k$ 次剩余当且仅当 $d\mid \operatorname{ind}_g a$ ，即：$ a^{\frac{\varphi(m)}{d}}\equiv 1\pmod m $
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{证明 1}：令 $x=g^y$ ，则方程 $(1)$ 等价于
+$ g^{ky}\equiv g^{\operatorname{ind}_g a}\pmod m $
+
+其等价于
+$ ky\equiv \operatorname{ind}_g a\pmod{\varphi(m)} $
+
+由同余的性质，我们知道 $y$ 有整数解当且仅当 $d=(k,\varphi(m))\mid \operatorname{ind}_g a$ ，进而
+\begin{align} 
+\notag a^{\frac{\varphi(m)}{d}}\equiv 1\pmod m
+&\notag \iff g^{\frac{\varphi(m)}{d}\operatorname{ind}_g a}\equiv 1\pmod m\\ 
+&\notag \iff \varphi(m)\mid\frac{\varphi(m)}{d}\operatorname{ind}_g a\\ 
+&\notag \iff \varphi(m)d\mid \varphi(m)\operatorname{ind}_g a\\ 
+&\notag \iff d\mid \operatorname{ind}_g a
+\end{align}
+
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{性质 2}：方程 $(1)$ 若有解，则模 $m$ 下恰有 $d$ 个解
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{性质 3}：模 $m$ 的 $k$ 次剩余类的个数为 $\dfrac{\varphi(m)}{d}$ , 其有形式
+    $$ a\equiv g^{di}\pmod m,\qquad \left(0\leq i<\frac{\varphi(m)}{d}\right) $$
+\end{tcolorbox}
+
+\subsection{二次剩余}
+
+下面讨论模数是奇素数时的二次剩余问题：
+
+$$x^2 \equiv n \pmod p$$
+
+参考以上结论不难得出，也就说二次剩余的数量恰为 $\frac{p-1}{2}$ ，其他的非 $0$ 数都是非二次剩余，数量也是 $\frac{p-1}{2}$；判别是否为二次剩余只需检查是否 $n^{\frac{p-1}{2}} \equiv 1 \pmod p$ 即可。
+
+\subsection{Cipolla}
+
+通过随机找到一个 $a$ 满足 $a^2 - n$ 是非二次剩余。
+
+定义 $i^2\equiv a^2 - n$，将所有数表示为 $A+Bi$ 的形式，有 $(a+i)^{p+1}\equiv n$。
+
+那么 $(a+i)^{\frac{p-1}{2}}$ 即是一个解，其相反数是另一个解。
+
+\begin{minted}{c++}
+// == Preparations ==
+typedef long long ll;
+int mod , w2;
+mt19937 rnd(114514);
+struct Complex
+{
+    int a , b;
+    Complex(ll aa = 0 , ll bb = 0):a(aa % mod) , b(bb % mod){}
+};
+typedef Complex cp;
+cp operator + (cp x , cp y){return cp(x.a + y.a , x.b + y.b);}
+cp operator - (cp x , cp y){return cp(x.a - y.a , x.b - y.b);}
+cp operator * (cp x , cp y)
+{
+    return cp((ll)x.a * y.a + (ll)w2 * x.b % mod * y.b ,
+              (ll)x.b * y.a + (ll)y.b * x.a);
+}
+cp Qpow(cp x , int p)
+{
+    cp res = 1;
+    while(p)
+    {
+        if(p & 1)res = res * x;
+        x = x * x;
+        p >>= 1;
+    }
+    return res;
+}
+// == Main ==
+int Legendre(int a){return Qpow(a , (mod - 1) / 2).a;}
+pair<int , int> Cipolla(int a)
+{
+    if(a % mod == 0)return {0 , -1};
+    if(Legendre(a) == mod - 1)return {-1 , -1};
+    int res = 0;
+    while(1)
+    {
+        int r = rnd() % mod;
+        w2 = ((ll)r * r - a) % mod;
+        if(w2 < 0)w2 += mod;
+        if(w2 == 0)
+        {
+            res = r;
+            break ;
+        }
+        if(Legendre(w2) == mod - 1)
+        {
+            res = Qpow(cp(r , 1) , (mod + 1) / 2).a;
+            break ;
+        }
+    }
+    if(res * 2 >= mod)res = mod - res;
+    return {res , mod - res};
+}
+\end{minted}
