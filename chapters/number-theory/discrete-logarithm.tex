@@ -38,7 +38,7 @@ void Init()
 int BSGS(int b)
 {
     int r = b , ans = p;
-    for(int k = 0 ; k < sz ; k++)
+    for(int k = 0 ; k <= sz ; k++)
     {
         if(mp.find(r) != mp.end())
             ans = min((ll)ans , (ll)mp[r] * sz - k);

@@ -70,3 +70,32 @@ $g^{\frac{\varphi(m)}{p}}\not\equiv 1\pmod m$。
 
 一个数 $m$ 存在原根当且仅当 $m=2,4,p^{\alpha},2p^{\alpha}$ ，其中 $p$ 为奇素数， $\alpha\in \mathbf{N}^{*}$。
 \end{tcolorbox}
+
+\begin{minted}{c++}
+// == Preparations ==
+const int N = 1e6 + 5; 
+int m , pr[N] , phi[N] , vis[N] , mod; bitset<N>b;
+void Sieve(int n = N - 5);
+int Qpow(int x , int p , int mod);
+// == Main ==
+vector<int> PrimitiveRoot()
+{
+    int p , d; vector<int>pfac , g;
+    cin >> p >> d; mod = p;
+    if(!vis[p]){return g;} // whether exist primitive root
+    for(int i = 1 ; i <= m && pr[i] <= phi[p] ; i++)
+        if(phi[p] % pr[i] == 0)pfac.push_back(pr[i]);
+    for(int a = 1 ; a < p ; a++) // minimal primitive root is O(n^{0.25+eps})
+    {
+        if(__gcd(a , p) != 1)continue ;
+        bool ok = 1;
+        for(int x : pfac)if(Qpow(a , phi[p] / x , mod) == 1){ok = 0; break ;}
+        if(!ok)continue ;
+        g.push_back(a); break ;
+    }
+    for(int i = 2 ; i < phi[p] ; i++)
+        if(__gcd(i , phi[p]) == 1)g.push_back(Qpow(g[0] , i , mod));
+    sort(g.begin() , g.end());
+    return g;
+}
+\end{minted}

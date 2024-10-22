@@ -1,5 +1,7 @@
 \section{自定义哈希}
 
+\subsection{splitmix 和仿函数}
+
 \begin{minted}{c++}
 // == Preparations ==
 #include <chrono>
@@ -31,6 +33,48 @@ struct custom_hash { // custom hash for unsigned long long
 struct custom_hash { // custom hash for pair<unsigned long long, unsigned long long>
     size_t operator()(pair<unsigned long long, unsigned long long> x) const {
         return (splitmix64(x.first + genll()) << 1) ^ splitmix64(x.second + genll());
+    }
+};
+\end{minted}
+
+\subsection{xorshift}
+
+\begin{minted}{c++}
+// == Main ==
+unsigned long long xorshift(unsigned long long x) { x ^= x << 13; x ^= x >> 7; x ^= x << 17; return x; }
+unsigned xorshift(unsigned x) { x ^= x << 13; x ^= x >> 17; x ^= x << 5; return x; }
+\end{minted}
+
+\subsection{手写哈希表}
+
+\begin{minted}{c++}
+// == Main ==
+template<typename ValType , typename KeyType>
+struct HashTable
+{
+    static const int M = 13075 , P = 13003; // P < M and P is between N^1.1 to N^1.7
+    struct Node{KeyType key; ValType v; int nxt;}e[M];
+    int tot , head[P];
+    inline void Add(int u , const KeyType& k , const ValType &v){e[++tot] = {k , v , head[u]} , head[u] = tot;}
+    inline int hash(const KeyType& x){return x;}
+    ValType& operator[](const KeyType& x)
+    {
+        for(int i = head[hash(x) % P] ; i ; i = e[i].nxt)
+            if(e[i].key == x)return e[i].v;
+        Add(hash(x) % P , x , ValType());
+        return e[tot].v;
+    }
+    ValType at(const KeyType& x)
+    {
+        for(int i = head[hash(x) % P] ; i ; i = e[i].nxt)
+            if(e[i].key == x)return e[i].v;
+        return ValType();
+    }
+    void clear()
+    {
+        for(int i = 1 ; i <= tot ; i++)
+            head[hash(e[i].key) % P] = 0 , e[i] = {};
+        tot = 0;
     }
 };
 \end{minted}
