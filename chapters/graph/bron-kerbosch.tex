@@ -1,0 +1,50 @@
+\section{最大团搜索}
+
+给定一张无向图，Bron-Kerbosch 算法可以搜索出所有极大团。其时间复杂度与极大团数量相同，为 $\mathcal{O}(3^{\frac{n}{3}})$。
+
+我们定义一张图的 degeneracy 为最小的 $d$ 满足其任意导出子图都存在至少一个点度数 $\le d$，则复杂度为 $\mathcal{O}(dn3^{\frac{d}{3}})$。
+
+\begin{minted}{c++}
+// == Preparations ==
+#define popc __builtin_popcountll 
+typedef long long ll;
+const int N = 55;
+int n , ans , a[N]; ll g[N] , d[N]; //g is graph matrix , b[0...n-1][0...n-1]
+// == Main ==
+void Dfs(ll R , ll P , ll X)
+{
+    if(!P)
+    {
+        if(!X)ans = max(ans , popc(R));//now R is the maximal clique
+        return ;
+    }
+    ll v = __lg(P | X);
+    for(ll s = P ^ (P & g[v]) ; s ; s -= s & -s)
+    {
+        ll u = __lg(s & -s);
+        Dfs(R | (1ll << u) , P & g[u] , X & g[u]);
+        P ^= 1ll << u , X |= 1ll << u;
+    }
+}
+void BronKerbosch()
+{
+    for(int i = 0 ; i < n ; i++)d[i] = g[i];
+    for(int i = 0 ; i < n ; i++)
+    {
+        int &k = a[i]; k = -1;
+        for(int j = 0 ; j < n ; j++)
+            if(d[j] != -1 && (k == -1 || popc(d[j]) <= popc(d[k])))
+                k = j;
+        d[k] = -1;
+        for(int j = 0 ; j < n ; j++)
+            if(d[j] >= 0 && (d[j] >> k) & 1)d[j] ^= 1ll << k;
+    }
+    ll P = (1ll << n) - 1 , X = 0;
+    for(int i = 0 ; i < n ; i++)
+    {
+        int u = a[i];
+        Dfs(1ll << u , P & g[u] , X & g[u]);
+        P ^= 1ll << u , X |= 1ll << u;
+    }
+}
+\end{minted}

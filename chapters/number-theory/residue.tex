@@ -116,3 +116,11 @@ pair<int , int> Cipolla(int a)
     return {res , mod - res};
 }
 \end{minted}
+
+\subsection{模素数 N 次剩余}
+
+我们令 $x=g^c$ ， $g$ 是 $p$ 的原根（我们一定可以找到这个 $g$ 和 $c$ ），问题转化为求解 $(g^c)^a \equiv b \pmod p$ . 稍加变换，得到
+$$ (g^a)^c \equiv b \pmod p $$
+
+于是就转换成了 BSGS 的基本模型了，可以在 $O(\sqrt p)$ 解出 $c$ ，这样可以得到原方程的一个特解 $x_0\equiv g^c\pmod p$ .
+

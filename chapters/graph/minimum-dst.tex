@@ -1,0 +1,144 @@
+\section{最小树形图}
+
+\subsection{朱刘算法}
+
+基本想法：对除根节点外的所有点，选一条边权最小的入边；对于入边形成的简单环，最多只有一条边会被删除，将环缩成一个点，并改变与其相连边的边权。
+
+如果有环，每轮至少减少一个点。时间复杂度 $\mathcal{O}(nm)$。
+
+\begin{minted}{c++}
+bool ZhuLiu(int n , int m , int rt)
+{
+    while(1)
+    {
+        fill(mn + 1 , mn + n + 1 , 1e9);
+        fill(id + 1 , id + n + 1 , 0);
+        fill(top + 1 , top + n + 1 , 0);
+        for(int i = 1 ; i <= m ; i++)
+        {
+            auto [u , v , w] = e[i];
+            if(w < mn[v])mn[v] = w , fa[v] = u;
+        }
+        for(int i = 1 ; i <= n ; i++)
+        {
+            if(i == rt)continue ;
+            if(mn[i] != 1e9)ans += mn[i];
+            else return 0;
+        }
+        int cnt = 0 , tot = 0;
+        for(int i = 1 ; i <= n ; i++)
+        {
+            if(id[i] || i == rt)continue ;
+            int u = i;
+            for(; u != rt && !top[u] ; u = fa[u])top[u] = i;
+            if(top[u] == i)
+            {
+                id[u] = ++cnt;
+                for(int v = fa[u] ; v != u ; v = fa[v])
+                    id[v] = cnt;
+            }
+        }
+        if(!cnt)return 1;
+        for(int i = 1 ; i <= n ; i++)
+            if(!id[i])id[i] = ++cnt;
+        for(int i = 1 ; i <= m ; i++)
+        {
+            auto [u , v , w] = e[i];
+            if(id[u] == id[v])continue ;
+            e[++tot] = {id[u] , id[v] , w - mn[v]};
+        }
+        n = cnt , m = tot , rt = id[rt];
+    }
+}
+\end{minted}
+
+\subsection{可并堆优化}
+
+上述算法的瓶颈在于对每个点（包括缩环得到的点）找边权最小的入边。
+
+考虑用可并堆存储每个点 $u$ 的入边，为对该点入边边权同时减去 $w(\text{in}(u))$，堆需要支持全局减。
+
+为了避免每次对没有缩环的点的遍历，将过程改为迭代式的。
+
+同时维护两个并查集，分别记录连通块信息、当前所在环的编号。
+
+为保证图能被缩成一个点，需要先加入边 $(i,i \bmod n+1,+\infty)$。
+
+\begin{tcolorbox}
+\textbf{contraction 树}：为了计算方案，引入一种树结构，树上的叶子是图的原始节点，每个非叶子节点都表示一个环，每个点的父亲是它所在的环。
+\end{tcolorbox}
+
+收缩过程中，对每个环内的点记录其所在环的编号 $f$、环上的前驱（即树上的兄弟）$pre$、以及入边 $\text{in}$，即可刻画出该结构。
+
+由于优化后的缩环过程与 $r$ 无关，对于任意合法的根 $r$，都可以通过展开该结构得到以其为根的最小树形图。展开过程：
+
+\begin{enumerate}
+
+    \item 对于任意合法的根节点 $r$，从 $r$ 开始跳父亲直到 contraction 树的树根。
+
+    \item 对于每层的环，$r$ 的祖先 $u$ 就是从 $r$ 开始沿树边走，第一个访问到的点，该环不要的边就是 $\text{in}(u)$。
+
+    \item 从 $v=pre_u$ 开始依次访问环上的点，跳 $v=pre_v$，所有 $\text{in}(v)$ 就是环上的边，答案加上 $w(\text{in}(v))$。根据 $v$ 的入边可以得到进入环 $v$ 的点 $p$，递归处理 $p$（即展开环 $v$），注意 $p$ 只要跳到 $v$ 即可。
+
+\end{enumerate}
+
+展开过程 contraction 树上每条边只会访问一次，是 $\mathcal{O}(n)$ 的。
+
+对于缩环过程，可以构造数据，使得 $\mathcal{O}(m)$ 条边需要从堆中 pop，时间复杂度 $\mathcal{O}(m \log m)$。
+
+\begin{minted}{c++}
+// == Preparations ==
+#define pre(x) (id[e[in[x]].u])
+typedef pair<int , int>pr;
+int n , m , rt , num , h[N] , in[N] , f[N] , pre[N]; ll ans;
+struct Edge{int u , v , w;}e[M + N];
+struct Heap<pr>{}pq[N];//mergeable heap
+struct UnionSet
+{
+    int fa[N];
+    void init(int n){iota(fa + 1 , fa + n + 1 , 1);}
+    int find(int x){return x == fa[x] ? x : fa[x] = find(fa[x]);}
+    int& operator [](int x){return fa[find(x)];}
+}col , id;
+// == Main ==
+bool Work(int u)
+{
+    while(pq[u] && (in[u] = pq[u].top().se , pre(u) == u))
+        pq[u].pop();
+    if(!pq[u])return 0;
+    auto [w , i] = pq[u].top(); int v = pre(u);
+    in[u] = i , pq[u].tag -= w , pq[u].pop();
+    if(col[u] != col[v])
+    {
+        col[u] = col[v];
+        return 1;
+    }
+    pq[++num].merge(pq[u]) , col[u] = col[num];
+    for(int x = v ; x != u ; pre[x] = pre(x) , x = pre[x])
+        f[x] = id[x] = num , pq[num].merge(pq[x]);
+    f[u] = id[u] = num , pre[u] = v;
+    return Work(num);
+}
+ll Expand(ll u , ll rt)
+{
+    ll ans = 0;
+    for(; u != rt ; u = f[u])
+    {
+        for(int v = pre[u] ; v != u ; v = pre[v])
+        {
+            int w = e[in[v]].w;
+            if(w >= INF)return -1;
+            ans += Expand(e[in[v]].v , v) + w;
+        }
+    }
+    return ans;
+}
+ll Solve(int n , int m , int rt , Edge e[N + M])//filled e[1...m]
+{
+    for(int i = 1 ; i <= n ; i++)e[++m] = {i % n + 1 , i , INF};
+    for(int i = 1 ; i <= m ; i++)pq[e[i].v].push(pr(e[i].w , i));
+    col.init(n * 2) , id.init(n * 2) , num = n;
+    for(int i = 1 ; i <= n ; i++)if(id[i] == i)Work(i);
+    return Expand(rt , num);
+}
+\end{minted}
