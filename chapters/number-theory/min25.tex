@@ -12,9 +12,9 @@
 
 先求出 $i$ 是质数部分的和。
 
-为了方便起见，我们将 $f(i)$ 分解成若干 $x^k$ 之和，然后分别计算，这样我们要计算的函数就是**完全积性函数**了。
+为了方便起见，我们将 $f(i)$ 分解成若干 $x^k$ 之和，然后分别计算，这样我们要计算的函数就是\textbf{完全积性函数}了。
 
-考虑埃氏筛的过程，设 $g_{n,k}$ 表示**筛了 $2 \sim n$ 中的数，用前 $k$ 个质数来筛，没有被筛掉的数的 $f'$ 值之和**。
+考虑埃氏筛的过程，设 $g_{n,k}$ 表示\textbf{筛了 $2 \sim n$ 中的数，用前 $k$ 个质数来筛，没有被筛掉的数的 $f'$ 值之和}。
 
 设 $p_i$ 表示第 $i$ 个质数，考虑求出 $g$ 数组，首先容易发现如果 $p_k^2 > n$，$g_{n,k}=g_{n,k-1}$。
 
@@ -22,9 +22,9 @@
 
 $$g_{n,k}=g_{n,k-1}-f'(p_k) \times (g_{\lfloor \frac{n}{p_k} \rfloor,k-1}-\sum_{i=1}^{k-1}f'(p_i))$$
 
-注意 $g$ 数组计算的答案是**“将没被筛掉的数也当成质数”时的答案**。
+注意 $g$ 数组计算的答案是\textbf{“将没被筛掉的数也当成质数”时的答案}。
 
-我们考虑计算答案，设 $s_{n,k}$ 表示**筛了 $2 \sim n$ 中的数，用前 $k$ 个质数来筛，没有被筛掉的数的 $f$ 值之和。**
+我们考虑计算答案，设 $s_{n,k}$ 表示\textbf{筛了 $2 \sim n$ 中的数，用前 $k$ 个质数来筛，没有被筛掉的数的 $f$ 值之和。}
 
 现在这个 $s_{n,k}$ 求的就是真正的答案了，最终答案就是 $s_{n,0}+f(1)$。
 
@@ -34,15 +34,17 @@ $$s_{n,k}=g_{n,D}-sp_{k}+\sum_{p_i^e \le n \& i>k} f({p_i^e})(s_{\frac{n}{p_i^e}
 
 然后暴力递归求出 $s$ 就行了，不需要记忆化。
 
-\subsection{求 $1 \sim n$ 的素数个数}
+\subsection{求素数个数}
 
 \begin{minted}{c++}
+// == Preparations ==
 #define int long long
 #define id(x) ((x<=lim)?(id1[x]):(id2[n/(x)]))
 #define rep(i,j,k) for(int i=j;i<=k;++i)
 #define per(i,j,k) for(int i=j;i>=k;--i)
 int const N=1e6+10;
 int lim,prime[N],w[N],g[N],id1[N],id2[N],m;bool vis[N];
+// == Main ==
 inline void init(){
     //预处理根号以内质数
     rep(i,2,lim){
@@ -71,11 +73,13 @@ inline void solve(){
 \subsection{完整模板}
 
 \begin{minted}{c++}
+// == Preparations ==
 #define int long long
 #define rep(i,j,k) for(int i=j;i<=k;++i)
 #define per(i,j,k) for(int i=j;i>=k;--i)
 #define id(x) ((x<=lim)?(id1[x]):(id2[n/(x)]))
 #define add(x,y) (x=((x+y>=mod)?(x+y-mod):(x+y)))
+// == Main ==
 //例：求 f(p^k)=p^k(p^k-1) 的前缀和
 //发现 f(p^k)=p^{2k}-p^k
 int const mod=1e9+7;
