@@ -1,0 +1,94 @@
+\section{组合数的一些有用的公式}
+
+组合数递推公式（用途：求组合数行前缀和）：
+
+$$\binom{n}{m}=\binom{n-1}{m}+\binom{n-1}{m-1}$$
+
+范德蒙德卷积：
+
+$$\sum_{i=0}^k \binom{n}{i}\binom{m}{k-i}=\binom{n+m}{k}$$
+
+范德蒙德卷积推论 $1$：
+
+$$\sum_{i=-r}^s \binom{n}{r+i}\binom{m}{s-i}=\binom{n+m}{r+s}$$
+
+范德蒙德卷积推论 $2$：
+
+$$\sum_{i=1}^n \binom{n}{i}\binom{n}{i-1}=\binom{2n}{n-1}$$
+
+范德蒙德卷积推论 $3$：
+
+$$\sum_{i=0}^n \binom{n}{i}^2=\binom{2n}{n}$$
+
+范德蒙德卷积推论 $4$：
+
+$$\sum_{i=0}^m \binom{n}{i}\binom{m}{i}=\binom{n+m}{m}$$
+
+对称恒等式：
+
+$$\binom{n}{m}=\binom{n}{n-m}$$
+
+吸收恒等式：
+
+$$\binom{n}{m}=\frac{n}{m}\binom{n-1}{m-1}$$
+
+不知道叫什么：
+
+$$\sum_{i=0}^n \binom{n}{i}=2^n$$
+
+二项式定理：
+
+$$(a+b)^n=\sum_{i=0}^n \binom{n}{i}a^{n-i}b^i$$
+
+用来容斥的东西：
+
+$$\sum_{i=0}^n (-1)^i \binom{n}{i}=[n=0]$$
+
+组合数带权和（对于 $i^k$ 可以得出是关于 $n$ 的 $k$ 次多项式与 $2^{n-k}$ 的乘积）：
+
+$$\sum_{i=0}^n i \binom{n}{i}=n2^{n-1}$$
+
+$$\sum_{i=0}^n i^2 \binom{n}{i}=n(n+1)2^{n-2}$$
+
+上指标求和：
+
+$$\sum_{i=m}^n \binom{i}{m}=\binom{n+1}{m+1}$$
+
+三项式版恒等式：
+
+$$\binom{n}{m}\binom{m}{k}=\binom{n}{k}\binom{n-k}{m-k}$$
+
+平行恒等式：
+
+$$\sum_{i=0}^n \binom{m+i}{i}=\binom{m+n+1}{n}$$
+
+上指标卷积：
+
+$$\sum_{i=0}^n \binom{i}{a}\binom{n-i}{b}=\binom{n+1}{a+b+1}$$
+
+二项式反演：
+
+$$f_n=\sum_{i=0}^n \binom{n}{i}g_i \leftrightarrow g_n=\sum_{i=0}^n (-1)^{n-i} \binom{n}{i} f_i$$
+
+$$f_n=\sum_{i=n}^m \binom{i}{n} g_i \leftrightarrow g_n=\sum_{i=n}^m (-1)^{i-n}\binom{i}{n}f_i$$
+
+多项式定理：
+
+设 $n$ 为正整数，$x_i$ 为实数，则：
+
+$$(x_1+x_2+...+x_t)^n=\sum_{\text{满足 $n_1+n_2+...+n_t=n$ 的非负整数解}} \binom{n}{n_1,n_2,...,n_t}x_1^{n_1}x_2^{n_2}\dots x_t^{n_t}$$
+
+其中的 $\binom{n}{n_1,n_2,...,n_t}$ 是多重集的排列数，取 $x_1=x_2=...=x_t=1$，得到 $\sum \binom{n}{n_1,n_2,...,n_t}=t^n$。
+
+错位排列：
+
+$$D_n=\sum_{k=0}^n(-1)^k\binom{n}{k}(n-k)!$$
+
+卡特兰数：
+
+$$H_n=\frac{1}{n+1}\binom{2n}{n}=\frac{(2n)!}{n!(n+1)!}$$
+
+$$H_n=\binom{2n}{n}-\binom{2n}{n-1}$$
+
+$$H_n=\frac{H_{n-1}(4n-2)}{n+1}$$
+
