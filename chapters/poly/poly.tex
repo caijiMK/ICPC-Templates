@@ -201,7 +201,11 @@ namespace Poly {
         f = f.exp();
         return f;
     }
-    // 不要求 F[0] = 1 的多项式快速幂，但是我忘记怎么用了，记得去回顾一下！
+    // 不要求 F[0] = 1 的多项式快速幂
+    /*
+    b1 为指数 mod m，b2 为指数 mod (phi(m) = mod - 1)
+    如果 b1 传入之前被取模了记得特判 a[0] = 0 且指数 > n 的情况，此时多项式每一位系数都是 0
+    */
     poly power(poly f, int b1, int b2 = -1) {
         if (b2 == -1) b2 = b1;
         int n = f.size(), p = 0;
