@@ -1,0 +1,47 @@
+\section{拉格朗日插值法}
+
+$$
+f(k) = \sum\limits_{i = 0}^n y_i \prod\limits_{j \neq i} \dfrac{k - x_j}{x_i - x_j}
+$$
+
+取值连续时的优化：
+
+当 $x_i = i$ 时可以优化成 $O(n)$。
+
+$$
+\begin{aligned}
+f(k) &= \sum\limits_{i = 0}^n y_i \prod\limits_{j \neq i} \dfrac{k - x_j}{x_i - x_j} \\
+&= \sum\limits_{i = 0}^n y_i \prod\limits_{j \neq i} \dfrac{k - j}{i - j}
+\end{aligned}
+$$
+
+令 $pre_i = \prod\limits_{j = 0}^i (k - j), suf_i = \prod\limits_{j = i}^n (k - j)$：
+
+$$
+f(k) = \sum\limits_{i = 0}^n y_i \dfrac{pre_{i - 1} \times suf_{i + 1}}{i! \times (n - i)!} \times (-1)^{n - i}
+$$
+
+重心拉格朗日插值：
+
+$$
+\begin{aligned}
+f(k) &= \sum\limits_{i = 0}^n y_i \prod\limits_{i \neq j} \dfrac{k - x_j}{x_i - x_j} \\
+&= \sum\limits_{i = 0}^n y_i \dfrac{\prod\limits_{j \neq i} k - x_j}{\prod\limits_{j \neq i} x_i - x_j} \\
+&= \sum\limits_{i = 0}^n \dfrac{y_i}{k - x_i} \dfrac{\prod\limits_{j = 0}^n k - x_j}{\prod\limits_{j \neq i} x_i - x_j} \\
+\end{aligned}
+$$
+
+设 $g(k) = \prod\limits_{i = 0}^n k - x_i, t_i = \dfrac{y_i}{\prod\limits_{j \neq i} x_i - x_j}$。
+
+则
+
+$$
+\begin{aligned}
+f(k) &= \sum\limits_{i = 0}^n \dfrac{g(k)t_i}{k - x_i} \\
+&= g(k) \sum\limits_{i = 0}^n \dfrac{t_i}{k - x_i}
+\end{aligned}
+$$
+
+于是每次插入只需要更新之前的所有 $t_i$ 并计算当前点的 $t_i$ 即可，时间复杂度为 $O(n)$。
+
+由于 $g(k)$ 和 $\sum\limits_{i = 0}^k \dfrac{t_i}{k - x_i}$ 都可以 $O(n)$ 求得，故询问复杂度也是 $O(n)$。
