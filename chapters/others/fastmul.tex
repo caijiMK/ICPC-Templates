@@ -1,0 +1,15 @@
+\section{快速模乘算法}
+
+\begin{minted}{c++}
+// == Preparations ==
+typedef __float128 f128;
+typedef __int128 i128;
+typedef __uint128_t u128;
+// == Main ==
+inline i128 mul(i128 x , i128 y , i128 p)
+{
+    i128 z = (f128) x / p * y;
+    i128 res = (u128)x * y - (u128)z * p;
+    return (res + p) % p;
+}
+\end{minted}
