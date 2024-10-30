@@ -1,0 +1,136 @@
+\section{矩阵}
+
+\subsection{矩阵乘法的另一种理解}
+
+\begin{itemize}
+    \item $A$ 右乘矩阵 $B$，是对 $A$ 的列向量进行线性组合，组合系数记在 $B$ 的每个列向量中。
+    \item $B$ 左乘矩阵 $A$，是对 $B$ 的行向量进行线性组合，组合系数记在 $A$ 的每个行向量中。
+\end{itemize}
+
+\subsection{基本子空间}
+
+\begin{tcolorbox}
+    \textbf{行空间}：矩阵 $A$ 的行向量组的生成子空间称为行空间，记为 $C(A^{\mathrm{T}})$。
+
+    \textbf{列空间}：矩阵 $A$ 的列向量组的生成子空间称为列空间，记为 $C(A)$。
+\end{tcolorbox}
+\begin{tcolorbox}
+    根据矩阵的秩的定义，有：对于任意矩阵 $A$，有 $\dim C(A^{\mathrm{T}})=\dim C(A)=\operatorname{rank}(A)$。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+    \textbf{零空间}：矩阵 $A$ 的零空间为 $Ax=0$ 的所有解构成的空间，记为 $N(A)$。
+
+    \textbf{左零空间}：矩阵 $A$ 的左零空间为 $A^{\mathrm{T}}x=0$（或表述为 $x^{\mathrm{T}}A=0$） 的所有解构成的空间，记为 $N(A^{\mathrm{T}})$。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+    有：对于任意 $n\times m$ 的矩阵 $A$，有 $\dim N(A)=m-\operatorname{rank}(A),\dim N(A^{\mathrm{T}})=n-\operatorname{rank}(A)$。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+    \textbf{四个基本子空间的正交性}：根据四个子空间的定义，对于任意矩阵 $A$ 有：
+    \begin{itemize}
+        \item $N(A)$ 与 $C(A^{\mathrm{T}})$ 互为正交子空间，且互为正交补。
+        \item $N(A^{\mathrm{T}})$ 与 $C(A)$ 互为正交子空间，且互为正交补。
+    \end{itemize}
+
+\end{tcolorbox}
+
+\subsection{高斯消元}
+
+\begin{minted}{c++}
+// == Preparations ==
+double a[M][N];
+int Cmp(double x , double y = 0){return abs(x - y) < 1e-8 ? 0 : (x < y ? -1 : 1);}
+// == Main ==
+int Gauss()
+{
+    int tot = 0;
+    for(int i = 1 ; i <= n ; i++)
+    {
+        for(int j = tot + 1 ; j <= m ; j++)
+        {
+            if(Cmp(a[j][i]))
+            {
+                for(int k = 1 ; k <= n + 1 ; k++)
+                    swap(a[tot + 1][k] , a[j][k]);
+                break ;
+            }
+        }
+        if(!Cmp(a[tot + 1][i]))continue ;
+        for(int j = tot + 2 ; j <= m ; j++)
+        {
+            double r = a[j][i] / a[tot + 1][i];
+            for(int k = 1 ; k <= n + 1 ; k++)
+                a[j][k] -= r * a[tot + 1][k];   
+        }
+        tot++;
+    }
+    for(int i = tot + 1 ; i <= m ; i++)
+    {
+        if(Cmp(a[i][n + 1]))
+        {
+            return -1;// No solutions
+        }
+    }
+    if(tot == n)
+    {
+        for(int i = n ; i >= 1 ; i--)
+        {
+            a[i][n + 1] /= a[i][i] , a[i][i] = 1;   
+            for(int j = i - 1 ; j >= 1 ; j--)
+                a[j][n + 1] -= a[j][i] * a[i][n + 1] , a[j][i] = 0;
+        }
+        return 0;// One solution
+    }
+    return 1;// Many solutions
+}
+\end{minted}
+
+\subsection{逆矩阵}
+
+\begin{tcolorbox}
+    \textbf{逆矩阵}：设 $A$ 是一个 $n$ 阶方阵，若存在 $n$ 阶方阵 $B$ 使得 $AB=BA=I_n$，其中 $I_n$ 为 $n$ 阶单位矩阵，则称 $A$ 是可逆的，是非奇异矩阵，$B$ 是 $A$ 的逆矩阵，记为 $A^{-1}$。否则称 $A$ 不可逆，是奇异矩阵。
+\end{tcolorbox}
+
+逆矩阵可以用来快速求解线性方程组。设有 $Ax=b$，则有 $x=A^{-1}b$，对于不同的 $b$，每次只需要 $\mathcal{O}(n^2)$ 即可计算一组解。这样做的前提是 $A$ 可逆。
+
+\begin{minted}{c++}
+// == Preparations ==
+const int MOD = 1e9 + 7;
+int Inv(int x);
+// == Main ==
+bool Inv(int n , int a[N][N * 2])
+{
+    for(int i = 1 ; i <= n ; i++)
+        a[i][i + n] = 1;
+    for(int i = 1 ; i <= n ; i++)
+    {
+        for(int j = i ; j <= n ; j++)
+        {
+            if(a[j][i] != 0)
+            {
+                for(int k = 1 ; k <= n * 2 ; k++)
+                    swap(a[j][k] , a[i][k]);
+                break ;
+            }
+        }
+        if(!a[i][i])return 0;// No Solution
+        int inv = Inv(a[i][i]);
+        for(int j = 1 ; j <= n ; j++)
+        {
+            if(j == i)continue ;
+            int r = (ll)a[j][i] * inv % MOD;
+            for(int k = 1 ; k <= n * 2 ; k++)
+                a[j][k] = (a[j][k] - (ll)a[i][k] * r) % MOD;
+        }
+        for(int j = 1 ; j <= n * 2 ; j++)
+            a[i][j] = (ll)a[i][j] * inv % MOD;
+    }
+    for(int i = 1 ; i <= n ; i++)
+        for(int j = 1 ; j <= n ; j++)
+            if(a[i][j + n] < 0)a[i][j + n] += MOD;
+    return 1;
+}
+\end{minted}

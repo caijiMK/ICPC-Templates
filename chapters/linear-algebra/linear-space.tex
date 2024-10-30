@@ -1,0 +1,34 @@
+\section{线性空间}
+
+\begin{tcolorbox}
+    \textbf{线性空间}：给定域 $F$，$F$ 上的线性空间 $V$ 是一个集合，其上定义了两种二元运算：
+    \begin{itemize}
+        \item 加法 $+: V\times V\to V$；
+        \item 数乘 $\cdot: F\times V\to V$。
+    \end{itemize}
+    且满足：
+    \begin{multicols}{2}
+        \begin{itemize}
+            \item $\forall \mathbf{u},\mathbf{v},\mathbf{w}\in V,\mathbf{u}+(\mathbf{v}+\mathbf{w})=(\mathbf{u}+\mathbf{v})+\mathbf{w}$
+            \item $\forall \mathbf{u},\mathbf{v}\in V,\mathbf{u}+\mathbf{v}=\mathbf{v}+\mathbf{u}$
+            \item $\exists \mathbf{0}\in V,\forall \mathbf{v}\in V,\mathbf{v}+\mathbf{0}=\mathbf{0}+\mathbf{v}=\mathbf{v}$
+            \item $\forall \mathbf{v}\in V,\exists -\mathbf{v}\in V,\mathbf{v}+(-\mathbf{v})=\mathbf{0}$
+            \item $\exists 1\in F,\forall \mathbf{v}\in V,1\mathbf{v}=\mathbf{v}$
+            \item $\forall a,b\in F,\mathbf{v}\in V,a(b\mathbf{v})=(ab)\mathbf{v}$
+            \item $\forall a\in F,\mathbf{u},\mathbf{v}\in V,a(\mathbf{u}+\mathbf{v})=a\mathbf{u}+a\mathbf{v}$
+            \item $\forall a,b\in F,\mathbf{v}\in V,(a+b)\mathbf{v}=a\mathbf{v}+b\mathbf{v}$
+        \end{itemize}
+    \end{multicols}
+\end{tcolorbox}
+
+\subsection{正交子空间与正交补}
+
+\begin{tcolorbox}
+    \textbf{正交子空间}：若一个内积空间的子空间 $A,B$ 满足一者中的每个向量都与另一者正交（即内积为 $0$），那么它们互为正交子空间。
+\end{tcolorbox}
+
+其中内积空间是增添了一个额外的结构（即内积）的向量空间，这里略过其定义，可以狭义地理解为欧几里得空间 $\mathbb{R}^n$，内积定义为点积。
+
+\begin{tcolorbox}
+    \textbf{正交补}：对于一个内积空间的子空间 $A$，若另一个子空间 $B$ 包含所有与子空间 $A$ 正交的向量，则称 $B$ 为 $A$ 的正交补。
+\end{tcolorbox}
