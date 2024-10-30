@@ -1,6 +1,9 @@
 \section{K-D Tree}
 
 \begin{minted}{c++}
+// == Preparations ==
+#include <array>
+#include <vector>
 // == Main ==
 template<const int Dim = 2>
 struct KDTree {
@@ -77,4 +80,27 @@ struct KDTree {
         for (node *rt : root) getnode(rt, tmp);
     }
 };
+\end{minted}
+
+最近最远点查询：每次走到一个子树时判断到这个矩形的最近/最远点是否劣于答案，如果是则直接退出。
+
+\textbf{复杂度不正确！}
+
+\begin{minted}{c++}
+// == Main ==
+// 代码为查询 k 第远的点，q 为小根堆。
+void query(point p, node *now) {
+    if (!now) return;
+    long long mxdis = 0, dis = 0;
+    for (int i = 0; i < Dim; i++) {
+        mxdis += max((long long)(now->l[i] - p[i]) * (now->l[i] - p[i]),
+            (long long)(now->r[i] - p[i]) * (now->r[i] - p[i]));
+        dis += (long long)(now->p[i] - p[i]) * (now->p[i] - p[i]);
+    }
+    q.push(dis);
+    if ((int)q.size() > k) q.pop();
+    if ((int)q.size() == k && mxdis < q.top()) return;
+    query(p, now->ls), query(p, now->rs);
+    return;
+}
 \end{minted}
