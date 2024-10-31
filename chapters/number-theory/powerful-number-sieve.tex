@@ -1,0 +1,66 @@
+\section{Powerful Number 筛}
+
+Powerful Number 是形如 $a^2b^3$ 的数（即不含幂次 $=1$ 的质因子），记 $1\dots n$ 的 Powerful Number 的集合为 $\mathrm{PN}(n)$。其大小是 $\Theta(\sqrt{n})$ 级别的。
+
+构造一个积性函数 $g$，使得 $\forall p \in P, f(p) = g(p)$，称为素数拟合。
+
+找到一个函数 $h$，使得 $f = g * h$（$*$ 为狄利克雷卷积），由 $f(p)=g(p)$，可得 $h$ 只在 Powerful Number 处有值。推式子可得：
+
+$$
+F(n) = \sum\limits_{i=1}^n f(i) = \sum_{d\in\mathrm{PN}(n)}h(d)G(\left\lfloor\frac{n}{d}\right\rfloor)
+$$
+
+现在只需快速求出 $\mathrm{PN}(n)$、$h$ 在 $\mathrm{PN}(n)$ 上的值和 $G(n)$ 在 $\{\lfloor n/d\rfloor | d \in \mathrm{PN}(n)\}$ 上的值即可。
+
+要求 $f(p^k),g(p^k)$ 好求，且 $G$（$g$ 的前缀和）能杜教筛。
+
+时间复杂度为求 $G$ 的复杂度。
+
+\begin{minted}{c++}
+// == Preparations ==
+typedef __int128 i128;
+const int N = 5e6 + 5 , M = 1e4 + 5 , LG = 34;
+ll n , t , hp[M][LG] , tot , h[N] , pn[N];
+int m , mm , pr[N]; bool b[N];
+void Init(const int n = N - 5);// Init prime and prefix sum of g
+ll G(ll n);// Du Sieve
+// == Main ==
+void Dfs(int x , ll v , ll hv)
+{
+	if(x == mm)return ;
+	ll p = pr[x] , pk = p * p;
+	if((i128)v * pk <= n)Dfs(x + 1 , v , hv);
+	for(int i = 2 ; (i128)v * pk <= n ; i++ , pk *= p)
+	{
+		tot++ , pn[tot] = v * pk;
+		h[tot] = hv * hp[x][i] % MOD;
+		Dfs(x + 1 , v * pk , h[tot]);
+	}
+}
+ll Solve(ll _n)
+{
+	Init(); n = _n , t = sqrt(n);
+	for(mm = 1 ; pr[mm] <= t ; mm++);// need max prime > sqrt n
+	for(int i = 1 ; i <= mm ; i++)
+	{
+		ll p = pr[i] , v = p; hp[i][0] = 1;
+		for(int j = 1 ; v <= n ; j++ , v *= p)
+		{
+			ll g = p * (p - 1) % MOD; 
+			hp[i][j] = v % MOD * ((v - 1) % MOD) % MOD;// f(p^j)
+			for(int k = 1 ; k <= j ; k++)
+			{
+				hp[i][j] = (hp[i][j] - g * hp[i][j - k]) % MOD;// - g(p^k)*h(p^{j-k})
+				g = g * p % MOD * p % MOD;
+			}
+			//h(p^j) = f(p^j) - \sum_{k=1^j}g(p^k)*h(p^{j-k})
+		}
+	}
+	pn[1] = h[1] = tot = 1; 
+	Dfs(1 , 1 , 1);
+	ll ans = 0;
+	for(int i = 1 ; i <= tot ; i++)
+		ans = (ans + h[i] * G(n / pn[i])) % MOD;
+	return (ans + MOD) % MOD;
+}
+\end{minted}
