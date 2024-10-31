@@ -1,0 +1,132 @@
+\section{线性规划}
+
+\begin{tcolorbox}
+\textbf{线性规划标准型}：
+
+$$ \max \sum_{i=1}^n c_ix_i $$
+$$\text{s.t.\ \ \ } \sum_{j=1}^n a_{i,j}x_j \le b_i , i=1,2,3,\dots,m $$
+$$x_i\ge 0,i=1,2,3,\dots,n$$
+
+
+要求最大化一个关于这些变量的线性函数，满足每个限制的形式是一个线性函数小于等于某个值，且要求所有变量非负。
+\end{tcolorbox}
+
+写成矩阵的形式：
+
+$$ \max \mathbf{C}^T \mathbf{x} $$
+$$ \text{s.t.\ \ \ } \mathbf{Ax} \le \mathbf{B} $$
+$$ \mathbf{x \ge 0}$$
+
+\subsection{线性规划对偶}
+
+对于上述标准型线性规划，其对偶形式是：
+
+$$ \min \mathbf{B}^T \mathbf{y} $$
+$$ \text{s.t.\ \ \ } \mathbf{A^Ty} \le \mathbf{C} $$
+$$ \mathbf{y \ge 0}$$
+
+可以证明，两个互为对偶的线性规划的最优解相等。
+
+\subsection{单纯形法}
+
+以下代码可以求解一个标准型线性规划，数据范围 $1\leq n,m \leq 20$，$0 \leq |a_{ij}|,|b_i|,|c_j|\leq 100$。
+
+\begin{minted}{c++}
+typedef long double ld;
+typedef __float128 f128;
+const int N = 25;
+const f128 EPS = 1e-16L , INF = 1e50L;
+mt19937 rnd(114514);
+f128 fabs(const f128 &x){return x < 0 ? -x : x;}
+namespace LP
+{
+	const int N = ::N , M = ::N;
+	#define b(i) (a[i][0])
+	#define c(i) (a[0][i])
+	int n , m , id[N + M];
+	f128 a[M][N] , ans[N + M];
+	void Pivot(int l , int e)
+	{
+		f128 k = a[l][e]; a[l][e] = 1;
+		swap(id[e] , id[l + n]);
+		for(int i = 0 ; i <= n ; i++)
+			a[l][i] /= k;
+		for(int i = 0 ; i <= m ; i++)
+		{
+			if(i == l || fabs(a[i][e]) < EPS)continue ;
+			f128 k = a[i][e]; a[i][e] = 0;
+			b(i) += (i ? -1 : 1) * k * b(l);
+			for(int j = 1 ; j <= n ; j++)
+				a[i][j] -= k * a[l][j];
+		}
+	}
+	bool Simplex()
+	{
+		while(1)
+		{
+			int l = 0 , e = 0; f128 mn = INF;
+			for(int i = 1 ; i <= n && !e ; i++)
+				if(a[0][i] > EPS)e = i;
+			if(!e)break ;
+			for(int i = 1 ; i <= m ; i++)
+			{
+				f128 v = b(i) / a[i][e];
+				if(a[i][e] > EPS && (v + EPS < mn || 
+				(fabs(mn - v) < EPS && id[i + n] < id[l + n])))
+					mn = v , l = i;
+			}
+			if(!l)return 1;
+			Pivot(l , e);
+		}
+		return 0;
+	}
+	bool Init(int nn , int mm)
+	{
+		n = nn , m = mm , b(0) = 0;
+		iota(id + 1 , id + n + m + 1 , 1);
+		while(1)
+		{
+			int l = 0 , e = 0;
+			for(int i = 1 ; i <= m ; i++)
+				if(b(i) < -EPS && (!l || rnd() & 1))l = i;
+			if(!l)break ;
+			for(int i = 1 ; i <= n ; i++)
+				if(a[l][i] < -EPS && (!e || rnd() & 1))e = i;
+			if(!e)return 1;
+			Pivot(l , e);
+		}
+		return 0;
+	}
+}
+using LP::a;
+using LP::ans;
+using LP::id;
+signed main()
+{
+	ios::sync_with_stdio(0);
+	cin.tie(0) , cout.tie(0);
+	int n , m , tp; ld x; bool ex48;
+	cin >> n >> m >> tp;
+	for(int i = 1 ; i <= n ; i++)//c
+		cin >> x , a[0][i] = x;
+	for(int i = 1 ; i <= m ; i++)
+	{
+		for(int j = 1 ; j <= n ; j++)//a
+			cin >> x , a[i][j] = x;
+		cin >> x , a[i][0] = x;//b
+	}
+	if(LP::Init(n , m))cout << "Infeasible\n";
+	else if(LP::Simplex())cout << "Unbounded\n";
+	else
+	{
+		cout << setprecision(8) << fixed << (ld)a[0][0] << "\n";
+		if(tp == 1)
+		{
+			memset(ans , 0 , sizeof ans);
+			for(int i = 1 ; i <= m ; i++)ans[id[i + n]] = b(i);
+			for(int i = 1 ; i <= n ; i++)cout << (ld)ans[i] << " \n"[i == n];
+		}
+	}
+	return 0;
+}
+\end{minted}

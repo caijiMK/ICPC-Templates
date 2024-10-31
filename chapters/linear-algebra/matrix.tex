@@ -7,6 +7,28 @@
     \item $B$ 左乘矩阵 $A$，是对 $B$ 的行向量进行线性组合，组合系数记在 $A$ 的每个行向量中。
 \end{itemize}
 
+\subsection{矩阵的秩}
+
+\begin{tcolorbox}
+    \textbf{矩阵的行秩}：一个矩阵 $A$ 的行秩为 $A$ 的行向量的极大线性无关组的大小。
+
+    \textbf{矩阵的列秩}：列秩是 $A$ 的列向量的极大线性无关组的大小。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+    \textbf{定理}：矩阵的行秩等于列秩。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+    \textbf{矩阵的秩}：将矩阵 $A$ 的行秩和列秩统称为矩阵 $A$ 的秩，记为 $\operatorname{rank}(A)$。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+    \textbf{定理}：对于任意矩阵 $A,B$，有 $\operatorname{rank}(AB)\le \min(\operatorname{rank}(A),\operatorname{rank}(B))$.
+    \textbf{定理}：对于一个 $n\times m$ 的矩阵 $A$，假设其秩为 $r$，则 $A$ 可以表示为一个 $n\times r$ 的矩阵和一个 $r\times m$ 的矩阵的乘积。
+\end{tcolorbox}
+
+
 \subsection{基本子空间}
 
 \begin{tcolorbox}

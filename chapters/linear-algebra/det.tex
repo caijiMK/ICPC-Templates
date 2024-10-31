@@ -1,19 +1,96 @@
-\section{行列式求值}
+\section{行列式}
+
+\begin{tcolorbox}
+    \textbf{行列式}：一个 $n$ 阶方阵 $A$ 的行列式定义为
+    $$\sum_{\sigma\in S_n} (-1)^{\operatorname{N}(\sigma)}\prod_{i=1}^{n} A_{i,\sigma_i}$$
+    其中 $S_n$ 是所有 $n$ 阶排列的全体，$\operatorname{N}(\sigma)$ 表示 $\sigma$ 的逆序对数。
+
+    我们用 $\det(A)$ 或 $|A|$ 表示 $A$ 的行列式。
+\end{tcolorbox}
+
+\subsection{行列式的基本性质}
+
+\begin{itemize}
+    \item 某一行（列）有公因子 $k$，则可以提出 $k$。
+    \item 两行（列）互换，改变行列式正负符号：有向面积的方向改变。
+    \item 在行列式中，有两行（列）对应成比例或相同，则此行列式的值为 $0$：有两个重叠的向量，有向面积为零。
+    \item 在行列式中，某一行（列）的每个元素是两数之和，则此行列式可拆分为两个相加的行列式：一行只能选一个数，这个数拆成和的左 / 右部分。
+    $$
+            \begin{aligned}
+                \begin{vmatrix}
+                    a_{1,1} & a_{1,2} & \cdots & a_{1,n} \\
+                    \vdots & \vdots & \ddots & \vdots \\
+                    a_{i,1}+b_{i,1} & a_{i,2}+b_{i,2} & \cdots & a_{i,n}+b_{i,n} \\
+                    \vdots & \vdots & \ddots & \vdots \\
+                    a_{n,1} & a_{n,2} & \cdots & a_{n,n}
+                \end{vmatrix} 
+                =
+                \begin{vmatrix}
+                    a_{1,1} & a_{1,2} & \cdots & a_{1,n} \\
+                    \vdots & \vdots & \ddots & \vdots \\
+                    a_{i,1} & a_{i,2} & \cdots & a_{i,n} \\
+                    \vdots & \vdots & \ddots & \vdots \\
+                    a_{n,1} & a_{n,2} & \cdots & a_{n,n}
+                \end{vmatrix}
+                +
+                \begin{vmatrix}
+                    a_{1,1} & a_{1,2} & \cdots & a_{1,n} \\
+                    \vdots & \vdots & \ddots & \vdots \\
+                    b_{i,1} & b_{i,2} & \cdots & b_{i,n} \\
+                    \vdots & \vdots & \ddots & \vdots \\
+                    a_{n,1} & a_{n,2} & \cdots & a_{n,n}
+                \end{vmatrix}
+            \end{aligned}
+    $$
+    \item 将一行(列)的 $k$ 倍加进另一行(列)里，行列式的值不变：可用上两条性质证明。
+    \item 将行列式的行列互换，行列式的值不变。
+\end{itemize}
+
+\subsection{余子式与拉普拉斯展开}
+
+\begin{tcolorbox}
+    对于方阵 $A$，$I=\{i_1,i_2,\ldots,i_k\}\subseteq R$，$J=\{j_1,j_2,\ldots,j_k\}\subseteq C$，定义：
+
+    \begin{itemize}
+        \item $|A[I,J]|$ 称为子式，即选出一个子方阵求行列式。若 $I=J$（即选出的行、列集合相同），则也可称为主子式。当 $I=J=\{1,2,\ldots,k\}$ 时，也称为 $k$ 阶顺序主子式。
+        \item $|A[R\setminus I,C\setminus J]|$ 称为余子式。
+        \item $\operatorname{sgn}(I,J)|A[R\setminus I,C\setminus J]|$ 称为余子式。
+    \end{itemize}
+\end{tcolorbox}
+
+其中 $\operatorname{sgn}(I,J)=(-1)^{i_1+\cdots+i_k+j_1+\cdots+j_k}$，下同。
+
+矩阵的秩等于最高阶非零子式的阶数。这是因为如果子矩阵存在线性相关的两行（列），则行列式为零。
+
+\begin{tcolorbox}
+    \textbf{拉普拉斯展开}：对于 $n$ 阶方阵 $A$，对于任意 $1\le i\le n$，有
+    $$|A|=\sum_{j=1}^{n} (-1)^{i+j}|A[R\setminus\{i\},C\setminus \{j\}]|A_{i,j}$$
+\end{tcolorbox}
+\begin{itemize}
+    \item 对列也有同样的性质。
+    \item 根据行列式的定义即可证明。
+\end{itemize}
+
+\begin{tcolorbox}
+    \textbf{拉普拉斯定理}：对于方阵 $A$，以及任意 $I\subseteq R$，有
+    $$|A|=\sum_{J\subseteq C,|J|=|I|} \operatorname{sgn}(I,J)|A[I,J]|\cdot|A[R\setminus I,C\setminus J]|$$
+\end{tcolorbox}
 
 \begin{minted}{c++}
 // == Preparations ==
+typedef long long ll;
 const int N = 605;
 // == Main ==
-void Swap(int i , int j)
+int Det(int n , int mod , int a[N][N])
 {
-    if(i == j)return ;
-    for(int k = 1 ; k <= n ; k++)
-        swap(a[i][k] , a[j][k]);
-    f = -f;
-}
-int Det(int n , int mod , ll a[N][N])
-{
-    int m = 0;
+    int m = 0 , f = 1;
+    auto Swap = [&](int i , int j)
+    {
+        if(i == j)return ;
+        for(int k = 1 ; k <= n ; k++)
+            swap(a[i][k] , a[j][k]);
+        f = -f;
+    };
     for(int i = 1 ; i <= n ; i++)
     {
         m++;
@@ -26,7 +103,7 @@ int Det(int n , int mod , ll a[N][N])
             {
                 ll r = a[j][i] / a[m][i] % mod;
                 for(int k = 1 ; k <= n ; k++)
-                    a[j][k] = (a[j][k] - (ll)r * a[m][k]) % mod;
+                    a[j][k] = (a[j][k] - r * a[m][k]) % mod;
                 Swap(m , j);
             }
             if(!a[m][i])Swap(m , j);
@@ -34,7 +111,7 @@ int Det(int n , int mod , ll a[N][N])
     }
     ll ans = 1;
     for(int i = 1 ; i <= n ; i++)
-        ans *= a[i][i];
+        (ans *= a[i][i]) %= mod;
     return (ans * f % mod + mod) % mod;
 }
 \end{minted}
