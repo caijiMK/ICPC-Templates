@@ -51,3 +51,79 @@ $$
 $$
 
 第二个等号为多元二项式定理。
+
+\subsection{LGV 引理}
+
+对于 DAG $G$：
+
+\begin{itemize}
+    \item 定义 $\omega{P}$ 为路径 $P$ 上所有边权之积。
+    \item 定义 $e(u, v)$ 为从 $u$ 到 $v$ 所有路径的权值和，即 $e(u, v) = \sum_{P: u \to v} \omega(P)$。
+    \item 起点集合为 $A$，终点集合为 $B$，满足 $|A| = |B| = n$。
+    \item 定义一组 $A \to B$ 的不交路径 $S$：$S_i$ 是一条从 $A_i$ 到 $B_{\sigma(S)_i}$ 的路径（$\sigma(S)$ 是一个排列），对于任意 $i \ne j$，有 $S_i$ 与 $S_j$ 没有公共顶点。
+    \item 定义 $\mathrm{sign}(\sigma)$ 为排列 $\sigma$ 的逆序对数。
+\end{itemize}
+
+% 引理内容：
+
+$$
+\begin{aligned}
+M = \left[
+\begin{matrix}
+e(A_1, B_1) & e(A_1, B_2) & \cdots & e(A_1, B_n) \\
+e(A_2, B_1) & e(A_2, B_2) & \cdots & e(A_2, B_n) \\
+\vdots & \vdots & \ddots & \vdots \\
+e(A_n, B_1) & e(A_n, B_2) & \cdots & e(A_n, B_n) \\
+\end{matrix}
+\right] \\
+\mathrm{det}(M) = \sum\limits_{S: A \to B} (-1)^{\mathrm{sign}(\sigma(S))} \prod\limits_{i = 1}^n \omega(S_i)
+\end{aligned}
+$$
+
+\subsection{矩阵树定理}
+
+允许重边，自环无影响。
+
+\subsubsection{无向图}
+
+令 $w(i, j)$ 为 $i, j$ 间的边的边权。
+
+定义度数矩阵 $D(G)$ 为：
+
+$$
+D_{i, i}(G) = \sum\limits_{j} w(i, j), D_{i, j}(G) = 0, i \ne j
+$$
+
+定义邻接矩阵 $A(G)$ 为：
+
+$$
+A_{i, j}(G) = A_{j, i}(G) = w(i, j)
+$$
+
+定义 Laplace 矩阵 $L(G)$ 为 $L(G) = D(G) - A(G)$。
+
+令一棵生成树的权值为边权之积，则这张图的所有生成树的权值和为 $L(G)$ 的任意主子式。
+
+\subsubsection{有向图}
+
+定义出度矩阵 $D^{\text{out}}(G)$ 为：
+
+$$
+D^{\text{out}}_{i, i}(G) = \sum\limits_{j} w(i, j), D^{\text{out}}_{i, j}(G) = 0, i \ne j
+$$
+
+类似的定义入度矩阵 $D^{\text{in}}(G)$。
+
+定义邻接矩阵 $A(G)$ 为：
+
+$$
+A_{i, j}(G) = w(i, j)
+$$
+
+定义出度 Laplace 矩阵为 $L^{\text{out}}(G) = D^{\text{out}}(G) - A(G)$，类似地定义入度 Laplace 矩阵。
+
+则以 k 为根的内向树的权值和为 $L^{\text{out}}(G)$ 的 $k$ 行 $k$ 列主子式，以 k 为根的外向树的权值和为 $L^{\text{in}}(G)$ 的 $k$ 行 $k$ 列主子式。
+
+\subsection{BEST 定理}
+
+对于有向欧拉图，其不同的欧拉回路总数为以任意点为根的内向/外向生成树个数乘上 $\prod_{v \in V} (deg(v) - 1)!$。
