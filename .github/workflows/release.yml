@@ -16,6 +16,7 @@ jobs:
         with:
           python-version: '3.x'
       - run: pip install pygments
+      - run: pip install latexminted
       - uses: xu-cheng/latex-action@v3
         with:
           root_file: template.tex
