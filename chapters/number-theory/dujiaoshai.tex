@@ -1,0 +1,102 @@
+\section{杜教筛}
+
+\subsection{狄利克雷卷积 ($∗$)}
+
+定义两个数论函数 $f$ 和 $g$ 的狄利克雷卷积为：$(f*g)(n)=\sum_{d|n}f(d) \times g(\frac{n}{d})$。
+
+一些常见的卷积式：
+
+$$\mu*I=\epsilon$$
+
+$$\phi*I=id$$
+
+\subsection{杜教筛}
+
+$f$ 是一个积性函数，我们需要求 $f$ 的前缀和。
+
+考虑构造两个积性函数 $h,g$，满足 $h=f*g$。
+
+设 $S(n)=\sum_{i=1}^n f(i)$。
+
+套路式：
+
+$$\sum_{i=1}^n h(i)=\sum_{i=1}^n\sum_{d|i}g(d) \times f(\frac{i}{d})$$
+
+$$\sum_{i=1}^n h(i)=\sum_{i=1}^n\sum_{d=1}^{\lfloor\frac{n}{i}\rfloor} g(i) \times f(d)$$
+
+$$\sum_{i=1}^n h(i)=\sum_{i=1}^n g(i) \times S(\lfloor \frac{n}{i} \rfloor)$$
+
+然后将右边式子的第一项提出来，可以得到：
+
+$$\sum_{i=1}^n h(i)=g(1) \times S(n)+\sum_{i=2}^n g(i) \times S(\lfloor \frac{n}{i} \rfloor)$$
+
+$$g(1) \times S(n)=\sum_{i=1}^n h(i)-\sum_{i=2}^n g(i) \times S(\lfloor \frac{n}{i} \rfloor)$$
+
+经过复杂度分析后得出：如果能快速求出 $h$ 和 $g$ 的前缀和，求 $S(n)$ 的过程递归处理即可得到 $\Theta(n^{\frac{2}{3}})$ 的复杂度，\textbf{需要记忆化，并且先预处理出一部分值}。
+
+\subsection{示例代码}
+
+求 $\phi/\mu$ 的前缀和：
+
+```cpp
+//A tree without skin will surely die.
+//A man without face is invincible.
+#include<bits/stdc++.h>
+using namespace std;
+#define int long long
+int const N=1e7+10;
+int const maxn=1e7;
+int phi[N],prime[N],mu[N];
+bitset<N>vis;
+inline void init(){
+    phi[1]=mu[1]=1;
+    for (int i=2;i<=maxn;++i){
+        if (!vis[i])
+            prime[++prime[0]]=i,phi[i]=i-1,mu[i]=-1;
+        for (int j=1;j<=prime[0] && prime[j]*i<=maxn;++j){
+            vis[prime[j]*i]=1;
+            if (i%prime[j]==0){
+            	phi[i*prime[j]]=phi[i]*prime[j];
+                break;
+            }
+            phi[i*prime[j]]=phi[i]*phi[prime[j]];
+            mu[i*prime[j]]=-mu[i];
+        }
+    }
+    for (int i=2;i<=maxn;++i)
+        phi[i]+=phi[i-1],mu[i]+=mu[i-1];
+}
+//mu*I=e
+//f *g=h
+unordered_map<int,int>mpmu,mpphi;
+inline int summu(int n){
+	if (n<=maxn) return mu[n];
+	if (mpmu[n]) return mpmu[n];
+	int ans=1;
+	for (int l=2,r;l<=n;l=r+1)
+		r=n/(n/l),ans-=(r-l+1)*summu(n/l);
+	return mpmu[n]=ans;
+}
+//phi*I=id
+//f  *g=h
+inline int sumphi(int n){
+	if (n<=maxn) return phi[n];
+	if (mpphi[n]) return mpphi[n];
+	int ans=n*(n+1)/2;
+	for (int l=2,r;l<=n;l=r+1)
+		r=n/(n/l),ans-=(r-l+1)*sumphi(n/l);
+	return mpphi[n]=ans;
+}
+void solve(){
+	int n;cin>>n;
+	cout<<sumphi(n)<<' '<<summu(n)<<'\n';
+}
+signed main(){
+	ios::sync_with_stdio(false);
+	cin.tie(0),cout.tie(0);
+	int t=1;
+	cin>>t,init();
+	while (t--) solve();
+	return 0;
+}
+```
