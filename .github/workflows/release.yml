@@ -21,6 +21,9 @@ jobs:
           root_file: template.tex
           latexmk_use_xelatex: true
           args: -shell-escape
+          extra_fonts: |
+            ./fonts/*.ttf
+            ./fonts/*.ttc
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
