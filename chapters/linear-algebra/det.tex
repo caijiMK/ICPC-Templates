@@ -15,33 +15,6 @@
     \item 两行（列）互换，改变行列式正负符号：有向面积的方向改变。
     \item 在行列式中，有两行（列）对应成比例或相同，则此行列式的值为 $0$：有两个重叠的向量，有向面积为零。
     \item 在行列式中，某一行（列）的每个元素是两数之和，则此行列式可拆分为两个相加的行列式：一行只能选一个数，这个数拆成和的左 / 右部分。
-    $$
-            \begin{aligned}
-                \begin{vmatrix}
-                    a_{1,1} & a_{1,2} & \cdots & a_{1,n} \\
-                    \vdots & \vdots & \ddots & \vdots \\
-                    a_{i,1}+b_{i,1} & a_{i,2}+b_{i,2} & \cdots & a_{i,n}+b_{i,n} \\
-                    \vdots & \vdots & \ddots & \vdots \\
-                    a_{n,1} & a_{n,2} & \cdots & a_{n,n}
-                \end{vmatrix} 
-                =
-                \begin{vmatrix}
-                    a_{1,1} & a_{1,2} & \cdots & a_{1,n} \\
-                    \vdots & \vdots & \ddots & \vdots \\
-                    a_{i,1} & a_{i,2} & \cdots & a_{i,n} \\
-                    \vdots & \vdots & \ddots & \vdots \\
-                    a_{n,1} & a_{n,2} & \cdots & a_{n,n}
-                \end{vmatrix}
-                +
-                \begin{vmatrix}
-                    a_{1,1} & a_{1,2} & \cdots & a_{1,n} \\
-                    \vdots & \vdots & \ddots & \vdots \\
-                    b_{i,1} & b_{i,2} & \cdots & b_{i,n} \\
-                    \vdots & \vdots & \ddots & \vdots \\
-                    a_{n,1} & a_{n,2} & \cdots & a_{n,n}
-                \end{vmatrix}
-            \end{aligned}
-    $$
     \item 将一行(列)的 $k$ 倍加进另一行(列)里，行列式的值不变：可用上两条性质证明。
     \item 将行列式的行列互换，行列式的值不变。
 \end{itemize}

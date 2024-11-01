@@ -1,1 +1,20 @@
 \section{微积分}
+
+\begin{minted}{c++}
+// == Preparations ==
+double F(double x){return ;}// function
+// == Main ==
+double Simpson(double l , double r){return (r - l) / 6 * (F(l) + F(r) + 4 * F((l + r) / 2));}
+double Asr(double l , double r , double eps , double ans , int step)
+{
+    double mid = (l + r) / 2 , fl = Simpson(l , mid) , fr = Simpson(mid , r);
+    if((fl + fr - ans) < eps * 15 && step < 0)
+        return fl + fr + (fl + fr - ans) / 15;
+    return Asr(l , mid , eps / 2 , fl , step - 1) 
+         + Asr(mid , r , eps / 2 , fr , step - 1);
+}
+double Calc(double l , double r , double eps)
+{
+    return Asr(l , r , eps , Simpson(l , r) , 12);
+}
+\end{minted}

@@ -1,0 +1,49 @@
+\section{线性递推}
+
+\subsection{Berlekamp-Massey}
+
+对于给定的数列 $a_0,a_1,\dots$，BM 算法可以求出其最短线性递推式 $r_{0},r_{1},\dots,r_{k-1}$，其中 $r_0=1$，且对于任意 $p\ge k-1$，满足：
+
+$$
+\sum\limits_{i=0}^{k-1} a_{p-k}r_{k} = 0
+$$
+
+对于有限数列 $a_0,\dots,a_{n-1}$，BM 的复杂度是 $\mathcal{O}(n^2)$；
+
+对于无限数列，设其最短线性递推式的阶数上界为 $s$，有结论：取其前 $2s$ 项跑 BM，得到的就是其最短线性递推式。时间复杂度 $\mathcal{O}(s^2)$。
+
+\begin{minted}{c++}
+// == Preparations ==
+const int N , MOD;
+int Inv(int x);
+// == Main ==
+int BM(int a[N] , int r[N] , int n)
+{
+	static int tmp[N] , rr[N];
+	int p = -1 , t = 0 , l = 0 , k = 1; 
+	rr[0] = r[0] = 1;
+	for(int i = 0 ; i < n ; i++)
+	{
+		int dt = 0;
+		for(int j = 0 ; j < k ; j++)
+			dt = (dt + (ll)r[j] * a[i - j]) % MOD;
+		if(!dt)continue ;
+		if(p == -1)
+		{
+			p = i , t = dt , l = k , k = i + 2;
+			for(int j = 1 ; j < k ; j++)r[j] = 0;
+			continue ;
+		}
+		int c = (ll)dt * Inv(t) % MOD , nk = max(k , l + i - p);
+		for(int j = 0 ; j < i - p ; j++)tmp[j] = 0;
+		for(int j = 0 ; j < l ; j++)tmp[j + (i - p)] = (ll)rr[j] * c % MOD;
+		for(int j = 0 ; j < k ; j++)rr[j] = r[j];
+		for(int j = 0 ; j < nk ; j++)r[j] = (r[j] - tmp[j]) % MOD;
+		p = i , t = dt , l = k , k = nk;
+	}
+	return k;
+}
+\end{minted}
+
+\subsection{常系数齐次线性递推}
+
