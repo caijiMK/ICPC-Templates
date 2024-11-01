@@ -17,7 +17,7 @@ $$
 const int N , MOD;
 int Inv(int x);
 // == Main ==
-int BM(int a[N] , int r[N] , int n)
+int BM(int a[N] , int r[N] , int n)// a[0...n-1]
 {
 	static int tmp[N] , rr[N];
 	int p = -1 , t = 0 , l = 0 , k = 1; 
@@ -47,3 +47,32 @@ int BM(int a[N] , int r[N] , int n)
 
 \subsection{常系数齐次线性递推}
 
+给定一个 $k$ 阶齐次线性递推数列 $a$ 的前 $k$ 项，以及其线性递推式 $r$（定义与上文相同），求其第 $n$ 项。
+
+时间复杂度 $\mathcal{O}(k \log k \log n)$。
+
+\begin{minted}{c++}
+// == Preparations ==
+poly mof(poly f , poly g){
+    poly r = f - g * div(f , g);
+    r.resize((int)g.size() - 1);
+    return r;
+}
+// == Main ==
+int LinearRecursion(int n , int k , vector<int>r , vector<int>s)// |r| = k , |s| = k-1
+{
+    poly p(k) , f = {1} , x = {0 , 1};
+    for(int i = 0 ; i <= k - 1 ; i++)
+        p[i] = r[k - 1 - i];
+    while(n)
+    {
+        if(n & 1)f = mof(f * x , p);
+        x = mof(x * x , p);
+        n >>= 1;
+    }
+    int ans = 0;
+    for(int i = 0 ; i < k - 1 ; i++)
+        ans = (ans + (long long)f[i] * s[i]) % mod;
+    return (ans + mod) % mod;
+}
+\end{minted}

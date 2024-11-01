@@ -1,0 +1,140 @@
+\section{相似矩阵}
+
+\begin{tcolorbox}
+\textbf{矩阵的相似}：设 $A,B$ 是定义在数域 $K$ 上的 $n$ 阶方阵，若存在 $K$ 上的可逆矩阵 $U$ 满足 $B=U^{-1}AU$ 
+			则称 $A$ 与 $B$ 相似，记作 $A\sim B$。
+\end{tcolorbox}
+
+$\mathcal{M}_n(K)$ 上的相似关系是等价关系。
+
+对于矩阵 $A,B$，若 $A\sim B$，则有：
+
+\begin{itemize}
+	\item $\operatorname{rank}(A)=\operatorname{rank}(B)$
+	\item $\det(A)=\det(B)$
+	\item $\operatorname{tr}(A)=\operatorname{tr}(B)$
+\end{itemize}
+
+\begin{tcolorbox}
+\textbf{对角化}：矩阵 $A$ 与对角矩阵 $D$ 相似，即 $A=UDU^{-1}$，等价于 $AU=UD$ 且 $U$ 可逆：
+\end{tcolorbox}
+
+\section{特征值与特征多项式}
+
+\begin{tcolorbox}
+\textbf{特征值}：设 $A$ 是数域 $K$ 上的 $n$ 阶方阵。若有向量 $\alpha \in K^n,\alpha\ne 0$ 和数 $\lambda\in K$，使得 $A\alpha=\lambda\alpha$ 则称 $\lambda$ 是 $A$ 的特征值，$\alpha$ 是 $A$ 的特征向量，或者说 $\alpha$ 是属于 $\lambda$ 的特征向量。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{定理}：$\lambda$ 是 $A$ 的特征值当且仅当 $|\lambda I-A|=0$，$\alpha$ 是属于 $\lambda$ 的特征向量当且仅当 $\alpha$ 是 $(\lambda I-A)x=0$ 的非零解。
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\textbf{特征多项式}：$p_A(x)=|xI-A|$。其为一个 $n$ 次多项式，在复数域上恰有 $n$ 个根（包括重根）。
+\end{tcolorbox}
+
+由特征多项式的定义可得 $[x^n]p_A(x)=1,[x^{n-1}]p_A(x)=-\operatorname{tr}(A),[x^0]p_A(x)=(-1)^n\det(A)$。
+
+\subsection{求解特征多项式}
+
+由于相似的两个矩阵拥有相同的特征多项式，所以我们可以求出原矩阵 $A$ 的一个相似矩阵 $B$，如果 $p_B(x)$ 可以快速计算，那么就可以得到 $p_A(x)$。
+
+考虑初等变换的影响 $PAP^{-1}$，最终可以得到一个上海森堡矩阵，其求行列式是 $\mathcal{O}(n^2)$ 的，所以可以在 $\mathcal{O}(n^3)$ 复杂度内求解一个矩阵的特征多项式。
+
+\begin{minted}{c++}
+// == Preparations ==
+int Inv(int x);
+// == Main ==
+int Hessenberg(int a[][N] , int n)
+{
+	static int f[N]; f[n + 1] = 1;
+	for(int i = n ; i >= 1 ; i--)
+	{
+		int aa = 1; f[i] = 0;
+		for(int j = i ; j <= n ; j++)
+		{
+			f[i] = (f[i] + (ll)((j - i) & 1 ? -1 : 1) * a[i][j] * aa % MOD * f[j + 1]) % MOD;
+			aa = (ll)aa * a[j + 1][j] % MOD;
+		}
+	}
+	return f[1];
+}
+Poly operator * (const Poly &a , const Poly &b)
+{
+	int n = siz(a) , m = siz(b);
+	Poly c(n + m - 1);
+	for(int i = 0 ; i < n ; i++)
+		for(int j = 0 ; j < m ; j++)
+			c[i + j] = (c[i + j] + (ll)a[i] * b[j]) % MOD;
+	return c;
+}
+Poly operator * (const Poly &a , const int &v)
+{
+	Poly c = a;
+	for(int i = 0 ; i < siz(a) ; i++)
+		c[i] = (ll)c[i] * v % MOD;
+	return c;
+}
+Poly operator + (const Poly &a , const Poly &b)
+{
+	int n = siz(a) , m = siz(b);
+	Poly c = a; c.resize(max(n , m));
+	for(int i = 0 ; i < m ; i++)c[i] = (c[i] + b[i]) % MOD;
+	return c;
+}
+Poly Lagrange(int y[N] , int n)
+{
+	static int nn , fac[N] , inv[N] , t[N]; 
+	static Poly pre[N] , g[N];
+	if(nn < n)
+	{
+		fac[0] = inv[0] = 1;
+		for(int i = 1 ; i <= n ; i++)fac[i] = (ll)fac[i - 1] * i % MOD;
+		inv[n] = Inv(fac[n]);
+		for(int i = n - 1 ; i >= 1 ; i--)inv[i] = (ll)inv[i + 1] * (i + 1) % MOD;
+		nn = n;
+	}
+	Poly res; pre[0] = {1};
+	for(int i = 1 ; i <= n ; i++)g[i] = {-i , 1};
+	for(int i = 1 ; i <= n ; i++)pre[i] = pre[i - 1] * g[i];
+	for(int i = 1 ; i <= n ; i++)t[i] = (__int128)y[i] * inv[i - 1] * inv[n - i] * ((n - i) & 1 ? -1 : 1) % MOD;
+	for(int i = 1 ; i <= n ; i++)res = pre[i - 1] * t[i] + res * g[i];
+	return res;
+}// poly need to mod
+Poly Characteristic(int a[][N] , int n)
+{
+	static int y[N] , h[N][N];
+	for(int i = 1 ; i < n ; i++)
+	{
+		for(int j = i + 1 ; j <= n ; j++)
+		{
+			if(a[j][i])
+			{
+				for(int k = 1 ; k <= n ; k++)
+					swap(a[i + 1][k] , a[j][k]);
+				for(int k = 1 ; k <= n ; k++)
+					swap(a[k][i + 1] , a[k][j]);
+				break ;
+			}
+		}
+		if(!a[i + 1][i])continue ;
+		for(int j = i + 2 ; j <= n ; j++)
+		{
+			int v = (ll)a[j][i] * Inv(a[i + 1][i]) % MOD;
+			for(int k = 1 ; k <= n ; k++)
+				a[j][k] = (a[j][k] - (ll)a[i + 1][k] * v) % MOD;
+			for(int k = 1 ; k <= n ; k++)
+				a[k][i + 1] = (a[k][i + 1] + (ll)a[k][j] * v) % MOD;
+		}
+	}
+	for(int i = 1 ; i <= n ; i++)
+		for(int j = 1 ; j <= n ; j++)
+			h[i][j] = -a[i][j];
+	for(int x = 1 ; x <= n + 1 ; x++)
+	{
+		for(int i = 1 ; i <= n ; i++)h[i][i]++;
+		y[x] = Hessenberg(h , n);
+	}
+	return Lagrange(y , n + 1);
+}
+\end{minted}

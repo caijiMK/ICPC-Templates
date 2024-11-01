@@ -229,6 +229,7 @@ namespace Poly {
     }
     poly div(poly f, poly g) {
         int n = f.size() - 1, m = g.size() - 1;
+        if(n < m)return {0};
         reverse(f.begin(), f.end()), reverse(g.begin(), g.end());
         g.resize(n - m + 1);
         poly ans = f * g.inv();
