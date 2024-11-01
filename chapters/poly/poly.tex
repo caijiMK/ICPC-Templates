@@ -227,5 +227,14 @@ namespace Poly {
         for (int &i : f) i = (long long)i * v % mod;
         return f;
     }
+    poly div(poly f, poly g) {
+        int n = f.size() - 1, m = g.size() - 1;
+        reverse(f.begin(), f.end()), reverse(g.begin(), g.end());
+        g.resize(n - m + 1);
+        poly ans = f * g.inv();
+        ans.resize(n - m + 1);
+        reverse(ans.begin(), ans.end());
+        return ans;
+    }
 }
 \end{minted}
