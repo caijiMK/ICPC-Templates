@@ -1,0 +1,314 @@
+\section{筛法}
+
+\subsection{杜教筛}
+
+\subsubsection{狄利克雷卷积}
+
+定义两个数论函数 $f$ 和 $g$ 的狄利克雷卷积为：$(f*g)(n)=\sum_{d|n}f(d) \times g(\frac{n}{d})$。
+
+一些常见的卷积式：
+
+$$\mu*I=\epsilon$$
+
+$$\phi*I=id$$
+
+\subsubsection{杜教筛}
+
+$f$ 是一个积性函数，我们需要求 $f$ 的前缀和。
+
+考虑构造两个积性函数 $h,g$，满足 $h=f*g$。
+
+设 $S(n)=\sum_{i=1}^n f(i)$。
+
+套路式：
+
+$$\sum_{i=1}^n h(i)=\sum_{i=1}^n\sum_{d|i}g(d) \times f(\frac{i}{d})$$
+
+$$\sum_{i=1}^n h(i)=\sum_{i=1}^n\sum_{d=1}^{\lfloor\frac{n}{i}\rfloor} g(i) \times f(d)$$
+
+$$\sum_{i=1}^n h(i)=\sum_{i=1}^n g(i) \times S(\lfloor \frac{n}{i} \rfloor)$$
+
+然后将右边式子的第一项提出来，可以得到：
+
+$$\sum_{i=1}^n h(i)=g(1) \times S(n)+\sum_{i=2}^n g(i) \times S(\lfloor \frac{n}{i} \rfloor)$$
+
+$$g(1) \times S(n)=\sum_{i=1}^n h(i)-\sum_{i=2}^n g(i) \times S(\lfloor \frac{n}{i} \rfloor)$$
+
+经过复杂度分析后得出：如果能快速求出 $h$ 和 $g$ 的前缀和，求 $S(n)$ 的过程递归处理即可得到 $\Theta(n^{\frac{2}{3}})$ 的复杂度，\textbf{需要记忆化，并且先预处理出一部分值}。
+
+\subsubsection{示例代码}
+
+求 $\phi/\mu$ 的前缀和：
+
+\begin{minted}{c++}
+//A tree without skin will surely die.
+//A man without face is invincible.
+#include<bits/stdc++.h>
+using namespace std;
+#define int long long
+int const N=1e7+10;
+int const maxn=1e7;
+int phi[N],prime[N],mu[N];
+bitset<N>vis;
+inline void init(){
+    phi[1]=mu[1]=1;
+    for (int i=2;i<=maxn;++i){
+        if (!vis[i])
+            prime[++prime[0]]=i,phi[i]=i-1,mu[i]=-1;
+        for (int j=1;j<=prime[0] && prime[j]*i<=maxn;++j){
+            vis[prime[j]*i]=1;
+            if (i%prime[j]==0){
+                phi[i*prime[j]]=phi[i]*prime[j];
+                break;
+            }
+            phi[i*prime[j]]=phi[i]*phi[prime[j]];
+            mu[i*prime[j]]=-mu[i];
+        }
+    }
+    for (int i=2;i<=maxn;++i)
+        phi[i]+=phi[i-1],mu[i]+=mu[i-1];
+}
+//mu*I=e
+//f *g=h
+unordered_map<int,int>mpmu,mpphi;
+inline int summu(int n){
+    if (n<=maxn) return mu[n];
+    if (mpmu[n]) return mpmu[n];
+    int ans=1;
+    for (int l=2,r;l<=n;l=r+1)
+        r=n/(n/l),ans-=(r-l+1)*summu(n/l);
+    return mpmu[n]=ans;
+}
+//phi*I=id
+//f  *g=h
+inline int sumphi(int n){
+    if (n<=maxn) return phi[n];
+    if (mpphi[n]) return mpphi[n];
+    int ans=n*(n+1)/2;
+    for (int l=2,r;l<=n;l=r+1)
+        r=n/(n/l),ans-=(r-l+1)*sumphi(n/l);
+    return mpphi[n]=ans;
+}
+void solve(){
+    int n;cin>>n;
+    cout<<sumphi(n)<<' '<<summu(n)<<'\n';
+}
+signed main(){
+    ios::sync_with_stdio(false);
+    cin.tie(0),cout.tie(0);
+    int t=1;
+    cin>>t,init();
+    while (t--) solve();
+    return 0;
+}
+\end{minted}
+
+\subsection{Powerful Number 筛}
+
+Powerful Number 是形如 $a^2b^3$ 的数（即不含幂次 $=1$ 的质因子），记 $1\dots n$ 的 Powerful Number 的集合为 $\mathrm{PN}(n)$。其大小是 $\Theta(\sqrt{n})$ 级别的。
+
+构造一个积性函数 $g$，使得 $\forall p \in P, f(p) = g(p)$，称为素数拟合。
+
+找到一个函数 $h$，使得 $f = g * h$（$*$ 为狄利克雷卷积），由 $f(p)=g(p)$，可得 $h$ 只在 Powerful Number 处有值。推式子可得：
+
+$$
+F(n) = \sum\limits_{i=1}^n f(i) = \sum_{d\in\mathrm{PN}(n)}h(d)G(\left\lfloor\frac{n}{d}\right\rfloor)
+$$
+
+现在只需快速求出 $\mathrm{PN}(n)$、$h$ 在 $\mathrm{PN}(n)$ 上的值和 $G(n)$ 在 $\{\lfloor n/d\rfloor | d \in \mathrm{PN}(n)\}$ 上的值即可。
+
+要求 $f(p^k),g(p^k)$ 好求，且 $G$（$g$ 的前缀和）能杜教筛。
+
+时间复杂度为求 $G$ 的复杂度。
+
+\begin{minted}{c++}
+// == Preparations ==
+typedef __int128 i128;
+const int N = 5e6 + 5 , M = 1e4 + 5 , LG = 34;
+ll n , t , hp[M][LG] , tot , h[N] , pn[N];
+int m , mm , pr[N]; bool b[N];
+void Init(const int n = N - 5);// Init prime and prefix sum of g
+ll G(ll n);// Du Sieve
+// == Main ==
+void Dfs(int x , ll v , ll hv)
+{
+    if(x == mm)return ;
+    ll p = pr[x] , pk = p * p;
+    if((i128)v * pk <= n)Dfs(x + 1 , v , hv);
+    for(int i = 2 ; (i128)v * pk <= n ; i++ , pk *= p)
+    {
+        tot++ , pn[tot] = v * pk;
+        h[tot] = hv * hp[x][i] % MOD;
+        Dfs(x + 1 , v * pk , h[tot]);
+    }
+}
+ll Solve(ll _n)
+{
+    Init(); n = _n , t = sqrt(n);
+    for(mm = 1 ; pr[mm] <= t ; mm++);// need max prime > sqrt n
+    for(int i = 1 ; i <= mm ; i++)
+    {
+        ll p = pr[i] , v = p; hp[i][0] = 1;
+        for(int j = 1 ; v <= n ; j++ , v *= p)
+        {
+            ll g = p * (p - 1) % MOD; 
+            hp[i][j] = v % MOD * ((v - 1) % MOD) % MOD;// f(p^j)
+            for(int k = 1 ; k <= j ; k++)
+            {
+                hp[i][j] = (hp[i][j] - g * hp[i][j - k]) % MOD;// - g(p^k)*h(p^{j-k})
+                g = g * p % MOD * p % MOD;
+            }
+            //h(p^j) = f(p^j) - \sum_{k=1^j}g(p^k)*h(p^{j-k})
+        }
+    }
+    pn[1] = h[1] = tot = 1; 
+    Dfs(1 , 1 , 1);
+    ll ans = 0;
+    for(int i = 1 ; i <= tot ; i++)
+        ans = (ans + h[i] * G(n / pn[i])) % MOD;
+    return (ans + MOD) % MOD;
+}
+\end{minted}
+
+\subsection{min25 筛}
+
+\subsubsection{简述}
+
+应用范围：求 $\sum_{i=1}^n f(i)$，其中 $f(i)$ 是积性函数。
+
+需要满足 $f(i)$ 在 $i$ 是质数时的取值是多项式。
+
+时间复杂度：$\Theta(n^{1-\epsilon})$/$\Theta(\frac{n^{\frac{3}{4}}}{\log n})$。
+
+主要想法是将 $f(i)$ 分成三个部分后求和：$i$ 是质数，$i$ 是合数，$i=1$。
+
+先求出 $i$ 是质数部分的和。
+
+为了方便起见，我们将 $f(i)$ 分解成若干 $x^k$ 之和，然后分别计算，这样我们要计算的函数就是\textbf{完全积性函数}了。
+
+考虑埃氏筛的过程，设 $g_{n,k}$ 表示\textbf{筛了 $2 \sim n$ 中的数，用前 $k$ 个质数来筛，没有被筛掉的数的 $f'$ 值之和}。
+
+设 $p_i$ 表示第 $i$ 个质数，考虑求出 $g$ 数组，首先容易发现如果 $p_k^2 > n$，$g_{n,k}=g_{n,k-1}$。
+
+否则我们会筛掉一些数，由于是完全积性函数，容易得出转移：
+
+$$g_{n,k}=g_{n,k-1}-f'(p_k) \times (g_{\lfloor \frac{n}{p_k} \rfloor,k-1}-\sum_{i=1}^{k-1}f'(p_i))$$
+
+注意 $g$ 数组计算的答案是\textbf{“将没被筛掉的数也当成质数”时的答案}。
+
+我们考虑计算答案，设 $s_{n,k}$ 表示\textbf{筛了 $2 \sim n$ 中的数，用前 $k$ 个质数来筛，没有被筛掉的数的 $f$ 值之和。}
+
+现在这个 $s_{n,k}$ 求的就是真正的答案了，最终答案就是 $s_{n,0}+f(1)$。
+
+设 $sp_i=\sum_{j=1}^i p_j$，$D$ 为最大的 $i$ 满足 $p_i^2 \le n$，容易得出转移：
+
+$$s_{n,k}=g_{n,D}-sp_{k}+\sum_{p_i^e \le n \& i>k} f({p_i^e})(s_{\frac{n}{p_i^e},e}+[e>1])$$
+
+然后暴力递归求出 $s$ 就行了，不需要记忆化。
+
+\subsubsection{求素数个数}
+
+\begin{minted}{c++}
+// == Preparations ==
+#define int long long
+#define id(x) ((x<=lim)?(id1[x]):(id2[n/(x)]))
+#define rep(i,j,k) for(int i=j;i<=k;++i)
+#define per(i,j,k) for(int i=j;i>=k;--i)
+int const N=1e6+10;
+int lim,prime[N],w[N],g[N],id1[N],id2[N],m;bool vis[N];
+// == Main ==
+inline void init(){
+    //预处理根号以内质数
+    rep(i,2,lim){
+        if (!vis[i]) prime[++prime[0]]=i;
+        for (int j=1;j<=prime[0] && i*prime[j]<=lim;++j){
+            vis[i*prime[j]]=1;
+            if (i%prime[j]==0) break;
+        }
+    }
+}
+inline void solve(){
+    int n;cin>>n,lim=sqrtl(n),init();
+    for (int l=1,r;l<=n;l=r+1){
+        r=n/(n/l),w[++m]=n/l,g[m]=w[m]-1;
+        if (w[m]<=lim) id1[w[m]]=m;
+        else id2[n/w[m]]=m;
+        //预处理 g 数组第一维有可能的取值
+    }
+    rep(i,1,prime[0])
+        for (int j=1;j<=m && prime[i]*prime[i]<=w[j];++j)
+            g[j]-=g[id(w[j]/prime[i])]-(i-1);
+    cout<<g[id(n)]<<'\n';
+}
+\end{minted}
+
+\subsubsection{完整模板}
+
+\begin{minted}{c++}
+// == Preparations ==
+#define int long long
+#define rep(i,j,k) for(int i=j;i<=k;++i)
+#define per(i,j,k) for(int i=j;i>=k;--i)
+#define id(x) ((x<=lim)?(id1[x]):(id2[n/(x)]))
+#define add(x,y) (x=((x+y>=mod)?(x+y-mod):(x+y)))
+// == Main ==
+//例：求 f(p^k)=p^k(p^k-1) 的前缀和
+//发现 f(p^k)=p^{2k}-p^k
+int const mod=1e9+7;
+int n;
+inline int f(int op,int x){
+    x%=mod;
+    if (!op) return x;
+    return x*x%mod;
+}
+inline int F(int x){
+    x%=mod;
+    return x*(x-1)%mod;
+}
+inline int smf(int op,int x){
+    x%=mod;
+    if (!op) return (x*(x+1)/2)%mod;
+    return x*(x+1)%mod*(2*x%mod+1)%mod*166666668%mod;
+}
+//smf -> f 前缀和
+int const N=1e6+10;
+int lim,prime[N],sp1[N],sp2[N],w[N],g1[N],g2[N],id1[N],id2[N],m;bool vis[N];
+inline void init(){
+    //预处理根号以内质数
+    rep(i,2,lim){
+        if (!vis[i]) prime[++prime[0]]=i;
+        for (int j=1;j<=prime[0] && i*prime[j]<=lim;++j){
+            vis[i*prime[j]]=1;
+            if (i%prime[j]==0) break;
+        }
+    }
+    rep(i,1,prime[0]){
+        sp1[i]=sp1[i-1],add(sp1[i],f(0,prime[i]));
+        sp2[i]=sp2[i-1],add(sp2[i],f(1,prime[i]));
+    }
+}
+inline int S(int x,int y){
+    if (prime[y]>=x) return 0;
+    int ans=((g2[id(x)]+mod-g1[id(x)])%mod+mod-(sp2[y]-sp1[y]+mod)%mod)%mod;
+    for (int i=y+1;i<=prime[0] && prime[i]*prime[i]<=x;++i)
+        for (int e=1,gg=prime[i];gg<=x;++e,gg*=prime[i])
+            add(ans,F(gg)*(S(x/gg,i)+(e>1))%mod);
+    return ans;
+}
+inline void solve(){
+    cin>>n,lim=sqrtl(n),init();
+    for (int l=1,r;l<=n;l=r+1){
+        r=n/(n/l),w[++m]=n/l;
+        g1[m]=(smf(0,w[m])+mod-1)%mod;
+        g2[m]=(smf(1,w[m])+mod-1)%mod;
+        if (w[m]<=lim) id1[w[m]]=m;
+        else id2[n/w[m]]=m;
+        //预处理 g 数组第一维有可能的取值
+    }
+    rep(i,1,prime[0])
+        for (int j=1;j<=m && prime[i]*prime[i]<=w[j];++j)
+            add(g1[j],mod-f(0,prime[i])*(g1[id(w[j]/prime[i])]+mod-sp1[i-1])%mod),
+            add(g2[j],mod-f(1,prime[i])*(g2[id(w[j]/prime[i])]+mod-sp2[i-1])%mod);
+    cout<<(S(n,0)+1)%mod<<'\n';
+}
+\end{minted}
