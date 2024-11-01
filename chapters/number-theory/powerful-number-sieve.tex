@@ -27,40 +27,40 @@ ll G(ll n);// Du Sieve
 // == Main ==
 void Dfs(int x , ll v , ll hv)
 {
-	if(x == mm)return ;
-	ll p = pr[x] , pk = p * p;
-	if((i128)v * pk <= n)Dfs(x + 1 , v , hv);
-	for(int i = 2 ; (i128)v * pk <= n ; i++ , pk *= p)
-	{
-		tot++ , pn[tot] = v * pk;
-		h[tot] = hv * hp[x][i] % MOD;
-		Dfs(x + 1 , v * pk , h[tot]);
-	}
+    if(x == mm)return ;
+    ll p = pr[x] , pk = p * p;
+    if((i128)v * pk <= n)Dfs(x + 1 , v , hv);
+    for(int i = 2 ; (i128)v * pk <= n ; i++ , pk *= p)
+    {
+        tot++ , pn[tot] = v * pk;
+        h[tot] = hv * hp[x][i] % MOD;
+        Dfs(x + 1 , v * pk , h[tot]);
+    }
 }
 ll Solve(ll _n)
 {
-	Init(); n = _n , t = sqrt(n);
-	for(mm = 1 ; pr[mm] <= t ; mm++);// need max prime > sqrt n
-	for(int i = 1 ; i <= mm ; i++)
-	{
-		ll p = pr[i] , v = p; hp[i][0] = 1;
-		for(int j = 1 ; v <= n ; j++ , v *= p)
-		{
-			ll g = p * (p - 1) % MOD; 
-			hp[i][j] = v % MOD * ((v - 1) % MOD) % MOD;// f(p^j)
-			for(int k = 1 ; k <= j ; k++)
-			{
-				hp[i][j] = (hp[i][j] - g * hp[i][j - k]) % MOD;// - g(p^k)*h(p^{j-k})
-				g = g * p % MOD * p % MOD;
-			}
-			//h(p^j) = f(p^j) - \sum_{k=1^j}g(p^k)*h(p^{j-k})
-		}
-	}
-	pn[1] = h[1] = tot = 1; 
-	Dfs(1 , 1 , 1);
-	ll ans = 0;
-	for(int i = 1 ; i <= tot ; i++)
-		ans = (ans + h[i] * G(n / pn[i])) % MOD;
-	return (ans + MOD) % MOD;
+    Init(); n = _n , t = sqrt(n);
+    for(mm = 1 ; pr[mm] <= t ; mm++);// need max prime > sqrt n
+    for(int i = 1 ; i <= mm ; i++)
+    {
+        ll p = pr[i] , v = p; hp[i][0] = 1;
+        for(int j = 1 ; v <= n ; j++ , v *= p)
+        {
+            ll g = p * (p - 1) % MOD; 
+            hp[i][j] = v % MOD * ((v - 1) % MOD) % MOD;// f(p^j)
+            for(int k = 1 ; k <= j ; k++)
+            {
+                hp[i][j] = (hp[i][j] - g * hp[i][j - k]) % MOD;// - g(p^k)*h(p^{j-k})
+                g = g * p % MOD * p % MOD;
+            }
+            //h(p^j) = f(p^j) - \sum_{k=1^j}g(p^k)*h(p^{j-k})
+        }
+    }
+    pn[1] = h[1] = tot = 1; 
+    Dfs(1 , 1 , 1);
+    ll ans = 0;
+    for(int i = 1 ; i <= tot ; i++)
+        ans = (ans + h[i] * G(n / pn[i])) % MOD;
+    return (ans + MOD) % MOD;
 }
 \end{minted}

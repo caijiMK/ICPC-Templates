@@ -1,6 +1,6 @@
 \section{杜教筛}
 
-\subsection{狄利克雷卷积 ($∗$)}
+\subsection{狄利克雷卷积}
 
 定义两个数论函数 $f$ 和 $g$ 的狄利克雷卷积为：$(f*g)(n)=\sum_{d|n}f(d) \times g(\frac{n}{d})$。
 
@@ -38,7 +38,7 @@ $$g(1) \times S(n)=\sum_{i=1}^n h(i)-\sum_{i=2}^n g(i) \times S(\lfloor \frac{n}
 
 求 $\phi/\mu$ 的前缀和：
 
-```cpp
+\begin{minted}{c++}
 //A tree without skin will surely die.
 //A man without face is invincible.
 #include<bits/stdc++.h>
@@ -56,7 +56,7 @@ inline void init(){
         for (int j=1;j<=prime[0] && prime[j]*i<=maxn;++j){
             vis[prime[j]*i]=1;
             if (i%prime[j]==0){
-            	phi[i*prime[j]]=phi[i]*prime[j];
+                phi[i*prime[j]]=phi[i]*prime[j];
                 break;
             }
             phi[i*prime[j]]=phi[i]*phi[prime[j]];
@@ -70,33 +70,33 @@ inline void init(){
 //f *g=h
 unordered_map<int,int>mpmu,mpphi;
 inline int summu(int n){
-	if (n<=maxn) return mu[n];
-	if (mpmu[n]) return mpmu[n];
-	int ans=1;
-	for (int l=2,r;l<=n;l=r+1)
-		r=n/(n/l),ans-=(r-l+1)*summu(n/l);
-	return mpmu[n]=ans;
+    if (n<=maxn) return mu[n];
+    if (mpmu[n]) return mpmu[n];
+    int ans=1;
+    for (int l=2,r;l<=n;l=r+1)
+        r=n/(n/l),ans-=(r-l+1)*summu(n/l);
+    return mpmu[n]=ans;
 }
 //phi*I=id
 //f  *g=h
 inline int sumphi(int n){
-	if (n<=maxn) return phi[n];
-	if (mpphi[n]) return mpphi[n];
-	int ans=n*(n+1)/2;
-	for (int l=2,r;l<=n;l=r+1)
-		r=n/(n/l),ans-=(r-l+1)*sumphi(n/l);
-	return mpphi[n]=ans;
+    if (n<=maxn) return phi[n];
+    if (mpphi[n]) return mpphi[n];
+    int ans=n*(n+1)/2;
+    for (int l=2,r;l<=n;l=r+1)
+        r=n/(n/l),ans-=(r-l+1)*sumphi(n/l);
+    return mpphi[n]=ans;
 }
 void solve(){
-	int n;cin>>n;
-	cout<<sumphi(n)<<' '<<summu(n)<<'\n';
+    int n;cin>>n;
+    cout<<sumphi(n)<<' '<<summu(n)<<'\n';
 }
 signed main(){
-	ios::sync_with_stdio(false);
-	cin.tie(0),cout.tie(0);
-	int t=1;
-	cin>>t,init();
-	while (t--) solve();
-	return 0;
+    ios::sync_with_stdio(false);
+    cin.tie(0),cout.tie(0);
+    int t=1;
+    cin>>t,init();
+    while (t--) solve();
+    return 0;
 }
-```
+\end{minted}
