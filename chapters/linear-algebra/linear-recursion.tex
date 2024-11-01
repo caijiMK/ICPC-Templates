@@ -19,29 +19,29 @@ int Inv(int x);
 // == Main ==
 int BM(int a[N] , int r[N] , int n)// a[0...n-1]
 {
-	static int tmp[N] , rr[N];
-	int p = -1 , t = 0 , l = 0 , k = 1; 
-	rr[0] = r[0] = 1;
-	for(int i = 0 ; i < n ; i++)
-	{
-		int dt = 0;
-		for(int j = 0 ; j < k ; j++)
-			dt = (dt + (ll)r[j] * a[i - j]) % MOD;
-		if(!dt)continue ;
-		if(p == -1)
-		{
-			p = i , t = dt , l = k , k = i + 2;
-			for(int j = 1 ; j < k ; j++)r[j] = 0;
-			continue ;
-		}
-		int c = (ll)dt * Inv(t) % MOD , nk = max(k , l + i - p);
-		for(int j = 0 ; j < i - p ; j++)tmp[j] = 0;
-		for(int j = 0 ; j < l ; j++)tmp[j + (i - p)] = (ll)rr[j] * c % MOD;
-		for(int j = 0 ; j < k ; j++)rr[j] = r[j];
-		for(int j = 0 ; j < nk ; j++)r[j] = (r[j] - tmp[j]) % MOD;
-		p = i , t = dt , l = k , k = nk;
-	}
-	return k;
+    static int tmp[N] , rr[N];
+    int p = -1 , t = 0 , l = 0 , k = 1; 
+    rr[0] = r[0] = 1;
+    for(int i = 0 ; i < n ; i++)
+    {
+        int dt = 0;
+        for(int j = 0 ; j < k ; j++)
+            dt = (dt + (ll)r[j] * a[i - j]) % MOD;
+        if(!dt)continue ;
+        if(p == -1)
+        {
+            p = i , t = dt , l = k , k = i + 2;
+            for(int j = 1 ; j < k ; j++)r[j] = 0;
+            continue ;
+        }
+        int c = (ll)dt * Inv(t) % MOD , nk = max(k , l + i - p);
+        for(int j = 0 ; j < i - p ; j++)tmp[j] = 0;
+        for(int j = 0 ; j < l ; j++)tmp[j + (i - p)] = (ll)rr[j] * c % MOD;
+        for(int j = 0 ; j < k ; j++)rr[j] = r[j];
+        for(int j = 0 ; j < nk ; j++)r[j] = (r[j] - tmp[j]) % MOD;
+        p = i , t = dt , l = k , k = nk;
+    }
+    return k;
 }
 \end{minted}
 
