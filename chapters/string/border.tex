@@ -1,7 +1,5 @@
 \section{Border 理论}
 
-\subsection{关键结论}
-
 \begin{tcolorbox}
 \textbf{定理 1}：对于一个字符串 $s$，若用 $t$ 表示其最长的 Border，则有 $\mathcal{B}(s) = \mathcal{B}(t) \cup \{t\}$。
 \end{tcolorbox}
@@ -65,18 +63,3 @@ $$
 \begin{tcolorbox}
 \textbf{定理 12}：$|\mathrm{Ssuf}(s)| \le \log_2|s|$。
 \end{tcolorbox}
-
-\subsection{KMP}
-
-\begin{minted}{c++}
-// == Main ==
-// n is |s|, m is |t|.
-for (int i = 1, j = 0; i <= n; i++) {
-    while (j && t[j + 1] != s[i]) j = pi[j];
-    if (t[j + 1] == s[i])
-        if (++j == m) {
-            // ...
-            j = nxt[j];
-        }
-}
-\end{minted}

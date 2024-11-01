@@ -1,44 +1,16 @@
 \section{组合数的一些有用的公式}
 
-组合数递推公式（用途：求组合数行前缀和）：
+范德蒙德卷积及其推论：
 
-$$\binom{n}{m}=\binom{n-1}{m}+\binom{n-1}{m-1}$$
-
-范德蒙德卷积：
-
-$$\sum_{i=0}^k \binom{n}{i}\binom{m}{k-i}=\binom{n+m}{k}$$
-
-范德蒙德卷积推论 $1$：
-
-$$\sum_{i=-r}^s \binom{n}{r+i}\binom{m}{s-i}=\binom{n+m}{r+s}$$
-
-范德蒙德卷积推论 $2$：
-
-$$\sum_{i=1}^n \binom{n}{i}\binom{n}{i-1}=\binom{2n}{n-1}$$
-
-范德蒙德卷积推论 $3$：
-
-$$\sum_{i=0}^n \binom{n}{i}^2=\binom{2n}{n}$$
-
-范德蒙德卷积推论 $4$：
-
-$$\sum_{i=0}^m \binom{n}{i}\binom{m}{i}=\binom{n+m}{m}$$
-
-对称恒等式：
-
-$$\binom{n}{m}=\binom{n}{n-m}$$
-
-吸收恒等式：
-
-$$\binom{n}{m}=\frac{n}{m}\binom{n-1}{m-1}$$
-
-不知道叫什么：
-
-$$\sum_{i=0}^n \binom{n}{i}=2^n$$
-
-二项式定理：
-
-$$(a+b)^n=\sum_{i=0}^n \binom{n}{i}a^{n-i}b^i$$
+$$
+\begin{aligned}
+\sum_{i=0}^k \binom{n}{i}\binom{m}{k-i}=\binom{n+m}{k} \\
+\sum_{i=-r}^s \binom{n}{r+i}\binom{m}{s-i}=\binom{n+m}{r+s} \\
+\sum_{i=1}^n \binom{n}{i}\binom{n}{i-1}=\binom{2n}{n-1} \\
+\sum_{i=0}^n \binom{n}{i}^2=\binom{2n}{n} \\
+\sum_{i=0}^m \binom{n}{i}\binom{m}{i}=\binom{n+m}{m}
+\end{aligned}
+$$
 
 用来容斥的东西：
 
