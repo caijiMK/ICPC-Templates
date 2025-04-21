@@ -2,7 +2,10 @@
 
 \begin{minted}{c++}
 // == Preparations ==
+#include <chrono>
+#include <random>
 #include <vector>
+#include <algorithm>
 // == Main ==
 namespace Poly {
     const int mod = 998244353, G = 3, invG = 332748118;
@@ -20,7 +23,7 @@ namespace Poly {
     struct poly: vector<int> {
         poly(initializer_list<int> &&arg): vector<int>(arg) {}
         template<typename... argT>
-        poly(argT &&...args): vector<int>(forward<argT>(args)...) {}
+        explicit poly(argT &&...args): vector<int>(forward<argT>(args)...) {}
 
         poly operator+(const poly &b) const {
             const poly &a = *this;
@@ -38,7 +41,7 @@ namespace Poly {
             return ans;
         }
         poly operator-=(const poly &b) {return *this = *this - b;}
-        void NTT(poly &g, int flag) const {
+        static void NTT(poly &g, int flag) {
             int n = g.size();
             vector<unsigned long long> f(g.begin(), g.end());
             vector<int> swp(n);
@@ -53,7 +56,7 @@ namespace Poly {
                 for (int i = 1; i < mid; i++) w[i] = (long long)w[i - 1] * w1 % mod;
                 for (int i = 0; i < n; i += mid << 1)
                     for (int j = 0; j < mid; j++) {
-                        int t = (long long)w[j] * f[i + mid + j] % mod;
+                        int t = f[i + mid + j] % mod * w[j] % mod;
                         f[i + mid + j] = f[i + j] - t + mod;
                         f[i + j] += t;
                     }
@@ -64,9 +67,8 @@ namespace Poly {
             for (int i = 0; i < n; i++) g[i] = f[i] % mod * inv % mod;
             return;
         }
-
         // 下面是基于转置原理的 NTT，相对朴素版本效率更高。
-        void NTT(poly &g, int flag) const {
+        static void NTT(poly &g, int flag) {
             int n = g.size();
             vector<int> f(g.begin(), g.end());
             if (flag) {
@@ -102,7 +104,6 @@ namespace Poly {
             }
             return;
         }
-
         poly operator*(poly b) const {
             poly a(*this);
             int n = 1, len = (int)(a.size() + b.size()) - 1;
@@ -136,9 +137,41 @@ namespace Poly {
             g.resize(size());
             return g;
         }
-        poly sqrt() const { // need F[0] = 1.
+        poly sqrt() const { // F[0] 需要存在二次剩余。
+            static auto Cipolla = [](int n) -> int {
+                if (n == 1) return 1;
+                static auto Legendre = [](int n) -> int {return power(n, (mod - 1) / 2);};
+                static mt19937 gen(chrono::system_clock::now().time_since_epoch().count());
+                int r;
+                do r = gen() % mod;
+                while (Legendre(((long long)r * r - n + mod) % mod) != mod - 1);
+                static int sqw;
+                sqw = ((long long)r * r - n + mod) % mod;
+                struct complex {
+                    int r, i;
+
+                    complex() = default;
+                    complex(int _r, int _i): r(_r), i(_i) {}
+                    complex operator*(const complex &b) const {
+                        return complex(((long long)r * b.r + (long long)i * b.i % mod * sqw) % mod,
+                            ((long long)r * b.i + (long long)i * b.r) % mod);
+                    }
+                };
+                static auto power = [](complex a, int b) -> complex {
+                    complex ans(1, 0);
+                    while (b) {
+                        if (b & 1) ans = ans * a;
+                        a = a * a;
+                        b >>= 1;
+                    }
+                    return ans;
+                };
+                int ans = power(complex(r, 1), (mod + 1) / 2).r;
+                ans = min(ans, mod - ans);
+                return ans;
+            };
             poly f = *this, g;
-            g.push_back(1);
+            g.push_back(Cipolla(f[0]));
             int n = 1;
             while (n < (int)f.size()) n <<= 1;
             f.resize(n << 1);
@@ -175,7 +208,7 @@ namespace Poly {
             f.resize(size()); 
             return f;
         }
-        poly exp() const { // 需要满足 F[0] = 0
+        poly exp() const { // need F[0] = 0.
             poly f(*this), g;
             g.push_back(1);
             int n = 1;
@@ -195,14 +228,14 @@ namespace Poly {
         }
     };
 
-    inline poly power(poly f, int b) { // 需要满足 F[0] = 1
+    inline poly power(poly f, int b) { // need F[0] = 1.
         f = f.ln();
         for (int i = 0; i < (int)f.size(); i++) f[i] = (long long)f[i] * b % mod;
         f = f.exp();
         return f;
     }
-    // 不要求 F[0] = 1 的多项式快速幂
     /*
+    不要求 F[0] = 1
     b1 为指数 mod m，b2 为指数 mod (phi(m) = mod - 1)
     如果 b1 传入之前被取模了记得特判 a[0] = 0 且指数 > n 的情况，此时多项式每一位系数都是 0
     */
@@ -227,15 +260,72 @@ namespace Poly {
         for (int &i : f) i = (long long)i * v % mod;
         return f;
     }
-    poly div(poly f, poly g) {
+    pair<poly, poly> div(poly f, poly g) {
+        if (f.size() < g.size()) return {poly({0}), f};
+        poly bak_f = f, bak_g = g;
         int n = f.size() - 1, m = g.size() - 1;
         if(n < m)return {0};
         reverse(f.begin(), f.end()), reverse(g.begin(), g.end());
         g.resize(n - m + 1);
-        poly ans = f * g.inv();
-        ans.resize(n - m + 1);
-        reverse(ans.begin(), ans.end());
-        return ans;
+        poly q = f * g.inv();
+        q.resize(n - m + 1);
+        reverse(q.begin(), q.end());
+        poly r = bak_f - bak_g * q;
+        r.resize(m);
+        return {q, r};
+    }
+    vector<int> eval(poly f, vector<int> vec) {
+        static vector<poly> mul;
+        int n = max(f.size(), vec.size()), m = vec.size();
+        mul.resize(4 * n + 5);
+        f.resize(n), vec.resize(n);
+        auto init = [&vec](auto &&self, int l, int r, int now = 1) -> void {
+            if (l == r) {mul[now] = poly({1, (mod - vec[l]) % mod}); return;}
+            int mid = (l + r) / 2, ls = now * 2, rs = now * 2 + 1;
+            self(self, l, mid, ls), self(self, mid + 1, r, rs);
+            mul[now] = mul[ls] * mul[rs];
+            return;
+        };
+        init(init, 0, n - 1);
+        auto mult = [](poly f, poly g) -> poly {
+            int n = f.size(), m = g.size();
+            reverse(g.begin(), g.end());
+            g *= f;
+            for (int i = 0; i < n; i++) f[i] = g[i + m - 1];
+            return f;
+        };
+        auto solve = [&vec, &mult](auto &&self, int l, int r, poly f, int now = 1) -> void {
+            f.resize(r - l + 1);
+            if (l == r) {vec[l] = f[0]; return;}
+            int mid = (l + r) / 2, ls = now * 2, rs = now * 2 + 1;
+            self(self, l, mid, mult(f, mul[rs]), ls), self(self, mid + 1, r, mult(f, mul[ls]), rs);
+            return;
+        };
+        solve(solve, 0, n - 1, mult(f, mul[1].inv()));
+        vec.resize(m);
+        return vec;
+    }
+    poly interpolation(vector<pair<int, int>> vec) {
+        static vector<poly> mul;
+        int n = vec.size();
+        mul.resize(4 * n + 5);
+        poly x(n), y(n);
+        for (int i = 0; i < n; i++) x[i] = vec[i].first, y[i] = vec[i].second;
+        auto init = [&x](auto &&self, int l, int r, int now = 1) -> void {
+            if (l == r) {mul[now] = poly({(mod - x[l]) % mod, 1}); return;}
+            int mid = (l + r) / 2, ls = now * 2, rs = now * 2 + 1;
+            self(self, l, mid, ls), self(self, mid + 1, r, rs);
+            mul[now] = mul[ls] * mul[rs];
+            return;
+        };
+        init(init, 0, n - 1);
+        vector<int> val = eval(mul[1].derivative(), x);
+        auto solve = [&y, &val](auto &&self, int l, int r, int now = 1) -> poly {
+            if (l == r) return poly({int((long long)y[l] * power(val[l], mod - 2) % mod)});
+            int mid = (l + r) / 2, ls = now * 2, rs = now * 2 + 1;
+            return self(self, l, mid, ls) * mul[rs] + self(self, mid + 1, r, rs) * mul[ls];
+        };
+        return solve(solve, 0, n - 1);
     }
 }
 \end{minted}
