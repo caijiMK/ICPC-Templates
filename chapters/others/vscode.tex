@@ -52,7 +52,7 @@ For Windows:
             "command": [
                 "g++ ${file} -o ${fileDirname}/${fileBasenameNoExtension} -std=c++14 -O2 -Wl,--stack=2147483647",
                 "&&",
-                "start cmd /c \"${fileDirname}/${fileBasenameNoExtension} & echo.&pause\""
+                "start '${Dev}目录\consolepauser' \"${fileDirname}/${fileBasenameNoExtension}\""
             ],
             "options": {
                 "cwd": "${fileDirname}"
