@@ -38,6 +38,8 @@
 
 For Windows:
 
+命令面板输入 \lstinline|Terminal: Select Default Profile|，选择 cmd。
+
 \begin{minted}{json}
 {
     // See https://go.microsoft.com/fwlink/?LinkId=733558
@@ -45,19 +47,16 @@ For Windows:
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "tang loong wenmo",
             "type": "shell",
-            "label": "My C++ Runner",
-            "detail": "Build and Run Current C++ Program",
-            "command": [ // 三个编译方式保留一个即可。
-                "clear",
-                "&&",
-                "g++ ${file} -o ${fileDirname}/${fileBasenameNoExtension} -std=c++14 -Wall -Wextra -O2 && echo '== O2 =='",
+            "command": [
+                "g++ ${file} -o ${fileDirname}/${fileBasenameNoExtension} -std=c++14 -O2",
                 "&&",
                 "start cmd /c \"${fileDirname}/${fileBasenameNoExtension} & echo.&pause\""
             ],
-            "problemMatcher": [
-                "$gcc"
-            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
             "group": {
                 "kind": "build",
                 "isDefault": true
