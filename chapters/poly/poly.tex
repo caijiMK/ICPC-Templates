@@ -10,7 +10,7 @@
 namespace Poly {
     const int mod = 998244353, G = 3, invG = 332748118;
 
-    inline int power(int a, int b) {
+    int power(int a, int b) {
         int ans = 1;
         while (b) {
             if (b & 1) ans = (long long)ans * a % mod;
@@ -137,6 +137,42 @@ namespace Poly {
             g.resize(size());
             return g;
         }
+        poly derivative() const {
+            poly f(*this);
+            for (int i = 1; i < (int)f.size(); i++) f[i - 1] = (long long)f[i] * i % mod;
+            f.pop_back();
+            return f;
+        }
+        poly integral() const {
+            poly f(*this);
+            f.push_back(0);
+            for (int i = f.size() - 1; i >= 1; i--) f[i] = (long long)f[i - 1] * power(i, mod - 2) % mod;
+            f[0] = 0;
+            return f;
+        }
+        poly ln() const {
+            poly f((derivative() * inv()).integral());
+            f.resize(size()); 
+            return f;
+        }
+        poly exp() const { // need F[0] = 0.
+            poly f(*this), g;
+            g.push_back(1);
+            int n = 1;
+            while (n < (int)size()) n <<= 1;
+            f.resize(n);
+            for (int len = 2; len <= n; len <<= 1) {
+                poly tmp(g);
+                g.resize(len);
+                g = g.ln();
+                for (int i = 0; i < len; i++) g[i] = (f[i] - g[i] + mod) % mod;
+                g[0] = (g[0] + 1) % mod;
+                g *= tmp;
+                g.resize(len);
+            }
+            g.resize(size());
+            return g;
+        }
         poly sqrt() const { // F[0] 需要存在二次剩余。
             static auto Cipolla = [](int n) -> int {
                 if (n == 1) return 1;
@@ -149,7 +185,7 @@ namespace Poly {
                 sqw = ((long long)r * r - n + mod) % mod;
                 struct complex {
                     int r, i;
-
+        
                     complex() = default;
                     complex(int _r, int _i): r(_r), i(_i) {}
                     complex operator*(const complex &b) const {
@@ -190,45 +226,9 @@ namespace Poly {
             g.resize(size());
             return g;
         }
-        poly derivative() const {
-            poly f(*this);
-            for (int i = 1; i < (int)f.size(); i++) f[i - 1] = (long long)f[i] * i % mod;
-            f.pop_back();
-            return f;
-        }
-        poly integral() const {
-            poly f(*this);
-            f.push_back(0);
-            for (int i = f.size() - 1; i >= 1; i--) f[i] = (long long)f[i - 1] * power(i, mod - 2) % mod;
-            f[0] = 0;
-            return f;
-        }
-        poly ln() const {
-            poly f((derivative() * inv()).integral());
-            f.resize(size()); 
-            return f;
-        }
-        poly exp() const { // need F[0] = 0.
-            poly f(*this), g;
-            g.push_back(1);
-            int n = 1;
-            while (n < (int)size()) n <<= 1;
-            f.resize(n);
-            for (int len = 2; len <= n; len <<= 1) {
-                poly tmp(g);
-                g.resize(len);
-                g = g.ln();
-                for (int i = 0; i < len; i++) g[i] = (f[i] - g[i] + mod) % mod;
-                g[0] = (g[0] + 1) % mod;
-                g *= tmp;
-                g.resize(len);
-            }
-            g.resize(size());
-            return g;
-        }
     };
 
-    inline poly power(poly f, int b) { // need F[0] = 1.
+    poly power(poly f, int b) { // need F[0] = 1.
         f = f.ln();
         for (int i = 0; i < (int)f.size(); i++) f[i] = (long long)f[i] * b % mod;
         f = f.exp();
@@ -264,7 +264,6 @@ namespace Poly {
         if (f.size() < g.size()) return {poly({0}), f};
         poly bak_f = f, bak_g = g;
         int n = f.size() - 1, m = g.size() - 1;
-        if(n < m)return {0};
         reverse(f.begin(), f.end()), reverse(g.begin(), g.end());
         g.resize(n - m + 1);
         poly q = f * g.inv();

@@ -1,0 +1,263 @@
+\section{Top Tree}
+
+\begin{minted}{c++}
+// ならばこの痛みが魂だ
+// Think twice, code once.
+#include <vector>
+#include <cstdio>
+#include <string>
+#include <cstring>
+#include <iostream>
+#include <algorithm>
+#define eputchar(c) putc(c, stderr)
+#define eprintf(...) fprintf(stderr, __VA_ARGS__)
+#define eputs(str) fputs(str, stderr), putc('\n', stderr)
+using namespace std;
+
+int n, m, root, mod, a[100005];
+struct TopTree {
+    int n;
+    struct graph {
+        int tot, hd[100005];
+        int nxt[200005], to[200005];
+
+        void add(int u, int v) {
+            nxt[++tot] = hd[u];
+            hd[u] = tot;
+            to[tot] = v;
+            return;
+        }
+    } g;
+    int fa[100005], siz[100005], depth[100005], son[100005], timer, dfn[100005];
+    int st[17][100005];
+
+    int tot, root;
+    enum Type {E, C, R};
+    struct Cluster {
+        int up, dn, le, siz;
+        Type type;
+        int len, sum1, sum2;
+
+        Cluster() = default;
+        Cluster(int u, int d, int l, int s, Type t, int len, int sum1, int sum2):
+            up(u), dn(d), le(l), siz(s), type(t), len(len), sum1(sum1), sum2(sum2) {}
+    } w[200005];
+    int lzy1[200005], lzy2[200005];
+    int ls[200005], rs[200005];
+
+    static Cluster Compress(Cluster u, Cluster v) {
+        return Cluster(u.up, v.dn, u.le, u.siz + v.siz, C, u.len + v.len, u.sum1 + v.sum1, u.sum2 + v.sum2);
+    }
+    static Cluster Rake(Cluster u, Cluster v) {
+        return Cluster(v.up, v.dn, u.le, u.siz + v.siz, R, v.len, v.sum1, u.sum2 + v.sum2);
+    }
+    void dfs1(int now, int F) {
+        fa[now] = F, siz[now] = 1, depth[now] = depth[F] + 1;
+        w[now] = Cluster(F, now, now, 1, E, 1, a[now], a[now]);
+        for (int i = g.hd[now]; i; i = g.nxt[i])
+            if (g.to[i] != F) {
+                dfs1(g.to[i], now);
+                siz[now] += siz[g.to[i]];
+                if (siz[g.to[i]] > siz[son[now]]) son[now] = g.to[i];
+            }
+        return;
+    }
+    int solve(vector<int> &vec, int l, int r, Cluster (*merge)(Cluster, Cluster)) {
+        if (l == r) return vec[l];
+        int total = 0;
+        for (int i = l; i <= r; i++) total += w[vec[i]].siz;
+        int mid = r - 1;
+        for (int i = l, sum = 0; i < r; i++)
+            if ((sum += w[vec[i]].siz) > total / 2) {mid = i; break;}
+        int now = ++tot;
+        ls[now] = solve(vec, l, mid, merge), rs[now] = solve(vec, mid + 1, r, merge);
+        w[now] = merge(w[ls[now]], w[rs[now]]);
+        return now;
+    }
+    int dfs2(int top) {
+        vector<int> vec({top});
+        st[0][dfn[top] = ++timer] = fa[top];
+        for (int u = top; son[u]; u = son[u]) {
+            vector<int> sons;
+            for (int i = g.hd[u]; i; i = g.nxt[i])
+                if (g.to[i] != fa[u] && g.to[i] != son[u]) sons.push_back(dfs2(g.to[i]));
+            sons.push_back(son[u]);
+            st[0][dfn[son[u]] = ++timer] = u;
+            vec.push_back(solve(sons, 0, (int)sons.size() - 1, Rake));
+        }
+        return solve(vec, 0, (int)vec.size() - 1, Compress);
+    }
+    void build(int n, int root) {
+        tot = n;
+        dfs1(root, 0), this->root = dfs2(root);
+        dfn[0] = 0, siz[0] = n + 1;
+        for (int i = 1; i < 17; i++)
+            for (int j = 1; j <= n; j++)
+                st[i][j] = min(st[i - 1][j], st[i - 1][j + (1 << (i - 1))],
+                    [&](const int &x, const int &y) {return dfn[x] < dfn[y];});
+        return;
+    }
+    int getLCA(int u, int v) {
+        if (u == v) return u;
+        u = dfn[u], v = dfn[v];
+        if (u > v) swap(u, v);
+        u++;
+        int k = __lg(v - u + 1);
+        return min(st[k][u], st[k][v - (1 << k) + 1],
+            [&](const int &x, const int &y) {return dfn[x] < dfn[y];});
+    }
+    void down(int now) {
+        if (lzy1[now]) {
+            if (w[now].type == C) {
+                w[ls[now]].sum1 = (w[ls[now]].sum1 + (long long)lzy1[now] * w[ls[now]].len) % mod;
+                w[ls[now]].sum2 = (w[ls[now]].sum2 + (long long)lzy1[now] * w[ls[now]].len) % mod;
+                lzy1[ls[now]] = (lzy1[ls[now]] + lzy1[now]) % mod;
+            }
+            w[rs[now]].sum1 = (w[rs[now]].sum1 + (long long)lzy1[now] * w[rs[now]].len) % mod;
+            w[rs[now]].sum2 = (w[rs[now]].sum2 + (long long)lzy1[now] * w[rs[now]].len) % mod;
+            lzy1[rs[now]] = (lzy1[rs[now]] + lzy1[now]) % mod;
+            lzy1[now] = 0;
+        }
+        if (lzy2[now]) {
+            w[ls[now]].sum1 = (w[ls[now]].sum1 + (long long)lzy2[now] * w[ls[now]].len) % mod;
+            w[ls[now]].sum2 = (w[ls[now]].sum2 + (long long)lzy2[now] * w[ls[now]].siz) % mod;
+            lzy2[ls[now]] = (lzy2[ls[now]] + lzy2[now]) % mod;
+            w[rs[now]].sum1 = (w[rs[now]].sum1 + (long long)lzy2[now] * w[rs[now]].len) % mod;
+            w[rs[now]].sum2 = (w[rs[now]].sum2 + (long long)lzy2[now] * w[rs[now]].siz) % mod;
+            lzy2[rs[now]] = (lzy2[rs[now]] + lzy2[now]) % mod;
+            lzy2[now] = 0;
+        }
+        return;
+    }
+    int check1(int u, int v, const Cluster &w) {
+        if (dfn[u] > dfn[v]) swap(u, v);
+        if (dfn[v] < dfn[w.le]) return 0;
+        if (dfn[w.dn] <= dfn[u] && dfn[v] < dfn[w.dn] + siz[w.dn]) return 0;
+        if (dfn[w.dn] + siz[w.dn] <= dfn[u]) return 0;
+        if (dfn[u] < dfn[w.le] && dfn[w.dn] + siz[w.dn] <= dfn[v]) return 0;
+        return 1;
+    }
+    int check2(int u, int v, const Cluster &w) {
+        if (dfn[w.dn] <= dfn[u] && dfn[u] < dfn[w.dn] + siz[w.dn]) swap(u, v);
+        if (dfn[v] < dfn[w.dn] || dfn[v] >= dfn[w.dn] + siz[w.dn]) return 0;
+        return dfn[u] < dfn[w.le] || dfn[u] >= dfn[w.dn] + siz[w.dn];
+    }
+    void update1(int u, int v, int val, int now) {
+        // eprintf("u1: %d\n", now);
+        if (check2(u, v, w[now])) {
+            w[now].sum1 = (w[now].sum1 + (long long)val * w[now].len) % mod;
+            w[now].sum2 = (w[now].sum2 + (long long)val * w[now].len) % mod;
+            lzy1[now] = (lzy1[now] + val) % mod;
+            return;
+        }
+        down(now);
+        if (check1(u, v, w[ls[now]])) update1(u, v, val, ls[now]);
+        if (check1(u, v, w[rs[now]])) update1(u, v, val, rs[now]);
+        w[now] = (w[now].type == C ? Compress : Rake)(w[ls[now]], w[rs[now]]);
+        return;
+    }
+    void update1(int u, int v, int val) {
+        if (dfn[u] > dfn[v]) swap(u, v);
+        if (u != v) update1(u, v, val, root);
+        int lca = getLCA(u, v);
+        update1(fa[lca], lca, val, root);
+        return;
+    }
+    void update2(int u, int val, int now) {
+        // eprintf("u2: %d\n", now);
+        if (dfn[u] <= dfn[w[now].le] && dfn[w[now].dn] < dfn[u] + siz[u]) {
+            w[now].sum1 = (w[now].sum1 + (long long)val * w[now].len) % mod;
+            w[now].sum2 = (w[now].sum2 + (long long)val * w[now].siz) % mod;
+            lzy2[now] = (lzy2[now] + val) % mod;
+            return;
+        }
+        down(now);
+        if (dfn[u] <= dfn[w[ls[now]].dn]) update2(u, val, ls[now]);
+        if (dfn[w[rs[now]].le] < dfn[u] + siz[u]) update2(u, val, rs[now]);
+        w[now] = (w[now].type == C ? Compress : Rake)(w[ls[now]], w[rs[now]]);
+        return;
+    }
+    void update2(int u, int val) {return update2(u, val, root);}
+    int query1(int u, int v, int now) {
+        if (check2(u, v, w[now])) return w[now].sum1;
+        down(now);
+        int res = 0;
+        if (check1(u, v, w[ls[now]])) res = (res + query1(u, v, ls[now])) % mod;
+        if (check1(u, v, w[rs[now]])) res = (res + query1(u, v, rs[now])) % mod;
+        return res;
+    }
+    int query1(int u, int v) {
+        if (dfn[u] > dfn[v]) swap(u, v);
+        int res = u != v ? query1(u, v, root) : 0;
+        int lca = getLCA(u, v);
+        res = (res + query1(fa[lca], lca, root)) % mod;
+        return res;
+    }
+    int query2(int u, int now) {
+        // eprintf("q2: %d\n", now);
+        if (dfn[u] <= dfn[w[now].le] && dfn[w[now].dn] < dfn[u] + siz[u]) return w[now].sum2;
+        down(now);
+        int res = 0;
+        if (dfn[u] <= dfn[w[ls[now]].dn]) res = (res + query2(u, ls[now])) % mod;
+        if (dfn[w[rs[now]].le] < dfn[u] + siz[u]) res = (res + query2(u, rs[now])) % mod;
+        return res;
+    }
+    int query2(int u) {return query2(u, root);}
+    // void print(int now) {
+    //  eprintf("%d: %d %d %c %d %d\n", now, w[now].u, w[now].d, "ECR"[w[now].type], w[now].sum1, w[now].sum2);
+    //  if (w[now].type == E) return;
+    //  down(now);
+    //  print(ls[now]), print(rs[now]);
+    //  return;
+    // }
+} tr;
+
+int main() {
+    // freopen("in.txt", "r", stdin);
+    // freopen("out.txt", "w", stdout);
+    scanf("%d%d%d%d", &n, &m, &root, &mod);
+    for (int i = 1; i <= n; i++) scanf("%d", &a[i]), a[i] %= mod;
+    for (int i = 1; i < n; i++) {
+        int u, v;
+        scanf("%d%d", &u, &v);
+        tr.g.add(u, v), tr.g.add(v, u);
+    }
+    tr.build(n, root);
+    // tr.print(tr.root);
+    // eputs("---");
+    while (m--) {
+        int op;
+        scanf("%d", &op);
+        if (op == 1) {
+            int u, v, w;
+            scanf("%d%d%d", &u, &v, &w);
+            tr.update1(u, v, w);
+        } else if (op == 2) {
+            int u, v;
+            scanf("%d%d", &u, &v);
+            printf("%d\n", tr.query1(u, v));
+        } else if (op == 3) {
+            int u, w;
+            scanf("%d%d", &u, &w);
+            tr.update2(u, w);
+        } else {
+            int u;
+            scanf("%d", &u);
+            printf("%d\n", tr.query2(u));
+        }
+        // tr.print(tr.root);
+        // eputs("---");
+    }
+    return 0;
+}
+/*
+5 2 2 24
+9 5 9 12 2 
+1 2
+1 5
+3 1
+4 1
+1 5 1 3
+2 1 3
+*/
+\end{minted}
